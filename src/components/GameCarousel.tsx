@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Game } from '../types';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Eye, MessageSquare } from 'lucide-react';
 
 interface GameCarouselProps {
   games: Game[];
@@ -11,6 +11,7 @@ interface GameCarouselProps {
 
 const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [timeFrame, setTimeFrame] = useState<'today' | 'week' | 'month' | 'allTime'>('today');
   
   // Auto-advance the carousel
   useEffect(() => {
@@ -28,101 +29,110 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   const goToNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % games.length);
   };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
   
   if (games.length === 0) return null;
   
   const currentGame = games[currentIndex];
+
+  const timeFrameLabels = {
+    today: 'Best of today',
+    week: 'Best of this week',
+    month: 'Best of this month',
+    allTime: 'Best of all time'
+  };
   
   return (
     <div className="relative w-full mb-8">
-      <div className="bg-ggrave-darkgray mb-2 p-2 border-l-4 border-ggrave-red flex items-center">
-        <h2 className="font-pixel text-white text-sm md:text-base">{title}</h2>
-      </div>
-      
-      <div className="relative h-[300px] md:h-[400px] overflow-hidden group">
-        {/* Background banner image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700"
-          style={{ 
-            backgroundImage: `url(${currentGame.banner || currentGame.thumbnail})`,
-            filter: 'brightness(0.5) blur(5px)',
-            transform: 'scale(1.1)'
-          }}
-        />
-        
-        {/* Content overlay */}
-        <div className="absolute inset-0 flex flex-col md:flex-row p-4 md:p-6 z-10">
-          <div className="md:w-1/2 flex items-center justify-center">
-            <img 
-              src={currentGame.thumbnail}
-              alt={currentGame.title}
-              className="w-full md:max-w-md h-auto object-cover border-4 border-ggrave-darkgray shadow-2xl"
-            />
+      {/* Main carousel display */}
+      <div className="relative h-[400px] overflow-hidden group">
+        {/* Full-sized background image */}
+        <Link to={`/games/${currentGame.id}`} className="block w-full h-full">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${currentGame.banner || currentGame.thumbnail})` }}
+          />
+          
+          {/* Gradient overlay for text visibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          
+          {/* Top label - Best of today/week/month/allTime */}
+          <div className="absolute top-3 left-3 bg-black/60 text-white text-lg font-bold px-3 py-1 z-10">
+            {timeFrameLabels[timeFrame]}
           </div>
           
-          <div className="md:w-1/2 flex flex-col justify-center mt-4 md:mt-0 md:pl-8">
-            <h3 className="font-pixel text-xl md:text-2xl text-white mb-2">{currentGame.title}</h3>
-            <p className="text-sm text-gray-300 mb-4">by {currentGame.developer}</p>
-            
-            <p className="text-sm md:text-base text-gray-200 mb-6 line-clamp-3">
-              {currentGame.description}
-            </p>
-            
-            <div className="flex flex-wrap gap-2 mb-6">
-              {currentGame.genre.slice(0, 4).map((genre) => (
-                <span 
-                  key={genre} 
-                  className="px-2 py-1 bg-black bg-opacity-50 text-xs text-white border border-ggrave-red rounded-sm"
-                >
-                  {genre}
-                </span>
-              ))}
-            </div>
-            
-            <div className="flex items-center space-x-4 mb-2">
-              <span className="text-sm text-gray-300">
-                {currentGame.price === 'Free' ? 'Free' : `$${currentGame.price}`}
-              </span>
-              <span className="text-xs px-2 py-1 bg-ggrave-red text-white rounded-sm">
-                {currentGame.releaseStatus}
-              </span>
-            </div>
-            
-            <Link 
-              to={`/games/${currentGame.id}`}
-              className="pixel-button max-w-xs text-center"
-            >
-              Dig Up
+          {/* Developer avatar in top right */}
+          <div className="absolute top-3 right-3 z-10">
+            <Link to={`/developer/${currentGame.developer}`} className="block">
+              <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white overflow-hidden">
+                {/* This would be the developer's avatar - placeholder for now */}
+                <div className="w-full h-full bg-gray-500 flex items-center justify-center text-white text-xs">
+                  {currentGame.developer.substring(0, 2).toUpperCase()}
+                </div>
+              </div>
             </Link>
           </div>
-        </div>
+          
+          {/* Game title on bottom left with background for visibility */}
+          <div className="absolute bottom-16 left-0 max-w-2xl z-10">
+            <div className="bg-black/60 p-3">
+              <h2 className="text-white font-bold text-xl md:text-2xl">{currentGame.title}</h2>
+              <h3 className="text-gray-300 text-sm">{currentGame.developer}</h3>
+            </div>
+          </div>
+          
+          {/* Engagement stats (views, likes, comments) */}
+          <div className="absolute bottom-3 right-3 flex items-center space-x-3 bg-black/60 p-2 rounded z-10">
+            <div className="flex items-center">
+              <Heart size={16} className="text-red-500 mr-1" />
+              <span className="text-white text-sm">{currentGame.likes}</span>
+            </div>
+            <div className="flex items-center">
+              <Eye size={16} className="text-white mr-1" />
+              <span className="text-white text-sm">{Math.floor(currentGame.views / 1000)}k</span>
+            </div>
+            <div className="flex items-center">
+              <MessageSquare size={16} className="text-white mr-1" />
+              <span className="text-white text-sm">{currentGame.comments}</span>
+            </div>
+          </div>
+        </Link>
         
         {/* Navigation arrows */}
         <button
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={goToPrevious}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
+          onClick={(e) => { e.preventDefault(); goToPrevious(); }}
         >
           <ChevronLeft size={24} />
         </button>
         <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={goToNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
+          onClick={(e) => { e.preventDefault(); goToNext(); }}
         >
           <ChevronRight size={24} />
         </button>
-        
-        {/* Dots indicator */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-          {games.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-3 h-3 rounded-full ${
-                index === currentIndex ? 'bg-ggrave-red' : 'bg-gray-500'
-              }`}
+      </div>
+      
+      {/* Thumbnail navigation */}
+      <div className="flex overflow-x-auto gap-2 py-2 mt-1 bg-ggrave-darkgray">
+        {games.map((game, index) => (
+          <button
+            key={game.id}
+            onClick={() => goToSlide(index)}
+            className={`flex-shrink-0 w-24 h-16 relative ${
+              index === currentIndex ? 'border-2 border-ggrave-red' : 'border border-gray-700'
+            }`}
+          >
+            <img 
+              src={game.thumbnail}
+              alt={game.title}
+              className="w-full h-full object-cover"
             />
-          ))}
-        </div>
+          </button>
+        ))}
       </div>
     </div>
   );
