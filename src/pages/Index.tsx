@@ -7,6 +7,7 @@ import { FilterState, Game } from '../types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import GameCard from '../components/GameCard'; // Added import for GameCard
 
 const Index: React.FC = () => {
   // Sample data for demonstration
