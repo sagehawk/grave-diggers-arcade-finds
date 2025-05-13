@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
@@ -324,7 +325,7 @@ const Index: React.FC = () => {
                       <SheetClose asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-800 transition-colors">
                           <X className="h-4 w-4" />
-                        </SheetClose>
+                        </Button>
                       </SheetClose>
                     </div>
                     <div className="p-4 overflow-y-auto h-full">
