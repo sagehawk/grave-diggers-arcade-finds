@@ -39,42 +39,22 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({ userId, isOwnProfile 
       setIsLoading(true);
       
       try {
-        // In a real implementation, fetch submissions from Supabase
-        // For now, we'll create mock data
-        const mockSubmissions = [
-          {
-            id: 'game1',
-            title: 'Cosmic Crusaders',
-            thumbnail: 'https://i.imgur.com/3ZwBGux.jpeg',
-            status: isOwnProfile ? 'pending' : 'published',
-            createdAt: '2023-05-15T10:20:30Z',
-            views: 1245,
-            likes: 87,
-            comments: 32,
-          },
-          {
-            id: 'game2',
-            title: 'Pixel Dungeon Master',
-            thumbnail: 'https://i.imgur.com/wmZSVPX.jpeg',
-            status: 'published',
-            createdAt: '2023-04-10T14:25:10Z',
-            views: 3782,
-            likes: 215,
-            comments: 48,
-          },
-          {
-            id: 'game3',
-            title: 'Galactic Pirate Saga',
-            thumbnail: 'https://i.imgur.com/CzXHxTe.jpeg',
-            status: isOwnProfile ? 'rejected' : 'published',
-            createdAt: '2023-03-22T09:15:45Z',
-            views: 960,
-            likes: 42,
-            comments: 18,
-          }
-        ];
+        let query = supabase.from('games')
+          .select('*')
+          .eq('submitter_user_id', userId);
         
-        setSubmissions(mockSubmissions);
+        // For public profiles, only show published games
+        if (!isOwnProfile) {
+          query = query.eq('status', 'published');
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          throw error;
+        }
+        
+        setSubmissions(data || []);
       } catch (error) {
         console.error('Error fetching submissions:', error);
         toast({
@@ -103,8 +83,13 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({ userId, isOwnProfile 
     if (!gameToDelete) return;
     
     try {
-      // In a real implementation, delete or mark as deleted in Supabase
-      console.log('Deleting game:', gameToDelete.id);
+      // Delete the game from Supabase (or use soft delete by updating status)
+      const { error } = await supabase
+        .from('games')
+        .update({ status: 'deleted' })
+        .eq('id', gameToDelete.id);
+        
+      if (error) throw error;
       
       // Remove from local state
       setSubmissions(submissions.filter(game => game.id !== gameToDelete.id));
@@ -197,15 +182,15 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({ userId, isOwnProfile 
               <div className="flex items-center space-x-4 text-gray-400 text-sm">
                 <div className="flex items-center">
                   <Eye size={14} className="mr-1" />
-                  <span>{game.views}</span>
+                  <span>{game.views || 0}</span>
                 </div>
                 <div className="flex items-center">
                   <ThumbsUp size={14} className="mr-1" />
-                  <span>{game.likes}</span>
+                  <span>{game.likes || 0}</span>
                 </div>
                 <div className="flex items-center">
                   <MessageSquare size={14} className="mr-1" />
-                  <span>{game.comments}</span>
+                  <span>{game.comments || 0}</span>
                 </div>
               </div>
             </CardContent>

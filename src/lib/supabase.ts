@@ -2,7 +2,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/database.types';
 
-const supabaseUrl = 'https://xliqdqaerqaezbngpzdd.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsaXFkcWFlcnFhZXpibnBwemRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxNTc3MjAsImV4cCI6MjA2MjczMzcyMH0.1I02V2oeB-kn4p-YzFHjzTsYJaU3ul_eEP3Phzb1F9I';
+// Using Vite's environment variable system
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://xliqdqaerqaezbngpzdd.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+
+// Verify the key is available
+if (!supabaseKey) {
+  console.error("Supabase key is not defined. Ensure VITE_SUPABASE_KEY environment variable is set correctly.");
+}
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey);

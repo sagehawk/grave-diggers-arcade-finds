@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '../context/AuthContext';
 import { User } from '../types/auth';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabase';
 
 interface ProfileSettingsProps {
   user: User;
@@ -31,6 +33,7 @@ interface ProfileFormData {
 
 const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   const { updateUserProfile, changePassword } = useAuth();
+  const { toast } = useToast();
   
   const form = useForm<ProfileFormData>({
     defaultValues: {
@@ -44,27 +47,57 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   });
 
   const onSubmit = async (data: ProfileFormData) => {
-    // Update profile if bio has changed
-    if (data.bio !== user.bio) {
-      await updateUserProfile({ bio: data.bio });
-    }
-    
-    // Change password if new password is provided
-    if (data.currentPassword && data.newPassword) {
-      if (data.newPassword !== data.confirmNewPassword) {
-        form.setError('confirmNewPassword', {
-          type: 'manual',
-          message: 'Passwords do not match',
+    try {
+      // Update profile if bio has changed
+      if (data.bio !== user.bio) {
+        // Use Supabase directly to update bio
+        const { error } = await supabase
+          .from('users')
+          .update({ bio: data.bio })
+          .eq('id', user.id);
+          
+        if (error) throw new Error(`Failed to update profile: ${error.message}`);
+        
+        // Also update via auth context (which should update local state)
+        await updateUserProfile({ bio: data.bio });
+        
+        toast({
+          title: "Profile updated",
+          description: "Your bio has been updated successfully.",
         });
-        return;
       }
       
-      await changePassword(data.currentPassword, data.newPassword);
-      
-      // Clear password fields
-      form.setValue('currentPassword', '');
-      form.setValue('newPassword', '');
-      form.setValue('confirmNewPassword', '');
+      // Change password if new password is provided
+      if (data.currentPassword && data.newPassword) {
+        if (data.newPassword !== data.confirmNewPassword) {
+          form.setError('confirmNewPassword', {
+            type: 'manual',
+            message: 'Passwords do not match',
+          });
+          return;
+        }
+        
+        const success = await changePassword(data.currentPassword, data.newPassword);
+        
+        if (success) {
+          toast({
+            title: "Password updated",
+            description: "Your password has been changed successfully.",
+          });
+          
+          // Clear password fields
+          form.setValue('currentPassword', '');
+          form.setValue('newPassword', '');
+          form.setValue('confirmNewPassword', '');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Update failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
     }
   };
 
