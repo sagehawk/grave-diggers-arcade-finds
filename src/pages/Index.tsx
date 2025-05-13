@@ -1,15 +1,18 @@
+
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
 import GameGrid from '../components/GameGrid';
 import CategoryFilters from '../components/CategoryFilters';
 import CommunityBuzzSection from '../components/CommunityBuzzSection';
+import FilterSidebar from '../components/FilterSidebar';
 import { FilterState, Game } from '../types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import GameCard from '../components/GameCard';
-import { Flame, Star, ArrowUp } from 'lucide-react';
+import { Flame, Star, ArrowUp, Filter, X } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -268,19 +271,19 @@ const Index: React.FC = () => {
       <Navbar />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Hero Section - Restructured for seamless integration */}
-        <div className="mb-8">
-          {/* Hero Row with Gallery and Right Side Content */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Left side Gallery - Takes up more space */}
-            <div className="lg:w-2/3">
+        {/* Main layout with hero section and content below */}
+        <div className="flex flex-col space-y-6">
+          {/* Hero Section with two columns on desktop */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left column: Game Carousel */}
+            <div className="w-full lg:w-2/3">
               <GameCarousel games={featuredGames} title="FEATURED GAMES" />
             </div>
             
-            {/* Right side with text, discord and categories */}
-            <div className="lg:w-1/3 flex flex-col">
+            {/* Right column: Game Over text, Discord, Filters */}
+            <div className="w-full lg:w-1/3 space-y-4">
               {/* "Game Over?" text block */}
-              <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
+              <div className="bg-[#181818] border border-gray-800 p-4">
                 <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
                   Game Over?
                 </h1>
@@ -307,62 +310,88 @@ const Index: React.FC = () => {
                 </div>
               </div>
               
-              {/* Category Filters - Enhanced with quick filters */}
-              <div className="flex-grow">
+              {/* Category Filters */}
+              <div>
                 <CategoryFilters filter={filter} onFilterChange={setFilter} />
               </div>
             </div>
           </div>
-        </div>
-        
-        {/* Tabs section - Full width */}
-        <div className="mb-4">
-          <Tabs 
-            defaultValue="ripe" 
-            className="w-full"
-            onValueChange={(value) => setActiveTab(value)}
-          >
-            <TabsList className="bg-[#181818] border border-gray-700">
-              <TabsTrigger 
-                value="ripe" 
-                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
-              >
-                <Flame size={16} /> Ripe
-              </TabsTrigger>
-              <TabsTrigger 
-                value="new" 
-                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
-              >
-                <Star size={16} /> New
-              </TabsTrigger>
-              <TabsTrigger 
-                value="updated" 
-                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
-              >
-                <ArrowUp size={16} /> Updated
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-        
-        {/* Two-column layout for Game Grid and Community Buzz */}
-        <div className="flex flex-col lg:flex-row gap-6 mb-8">
-          {/* Left Column - Game Grid (Wider) */}
-          <div className="lg:w-2/3">
-            <GameGrid 
-              games={getTabGames()} 
-              title={activeTab.toUpperCase()} 
-              viewAllLink={`/games/${activeTab}`}
-            />
+          
+          {/* Tabs section - Full width with filter button for mobile */}
+          <div className="flex items-center justify-between">
+            <Tabs 
+              defaultValue="ripe" 
+              className="flex-1"
+              onValueChange={(value) => setActiveTab(value)}
+            >
+              <TabsList className="bg-[#181818] border border-gray-700">
+                <TabsTrigger 
+                  value="ripe" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                >
+                  <Flame size={16} /> Ripe
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="new" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                >
+                  <Star size={16} /> New
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="updated" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                >
+                  <ArrowUp size={16} /> Updated
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            {/* Mobile filter button */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="ml-2 lg:hidden bg-[#181818] border-gray-700"
+                >
+                  <Filter size={16} className="mr-1" /> Filters
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[85vw] sm:w-[350px] p-0 bg-ggrave-black border-gray-800">
+                <div className="p-4 flex justify-between items-center border-b border-gray-800">
+                  <h3 className="font-pixel text-white text-sm">Filters</h3>
+                  <Sheet.Close asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </Sheet.Close>
+                </div>
+                <div className="p-4">
+                  <FilterSidebar filter={filter} onFilterChange={setFilter} />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
           
-          {/* Right Column - Community Buzz (Narrower) */}
-          <div className="lg:w-1/3">
-            <CommunityBuzzSection />
+          {/* Main content with Game Grid (left) and Community Buzz (right) */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left Column - Game Grid (Wider) */}
+            <div className="w-full lg:w-2/3">
+              <GameGrid 
+                games={getTabGames()} 
+                title={activeTab.toUpperCase()} 
+                viewAllLink={`/games/${activeTab}`}
+              />
+            </div>
+            
+            {/* Right Column - Community Buzz (Narrower) */}
+            <div className="w-full lg:w-1/3">
+              <CommunityBuzzSection />
+            </div>
           </div>
         </div>
         
-        {/* Footer section remains unchanged */}
+        {/* Footer section */}
         <footer className="bg-[#181818] border-t border-gray-800 py-6 mt-8">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-center">

@@ -174,7 +174,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filter, onFilterChange })
                     onChange={() => updateGenre(genre)}
                     className="rounded border-gray-700 text-ggrave-red focus:ring-ggrave-red"
                   />
-                  <span>{genre}</span>
+                  <span className={filter.genres.includes(genre) ? "text-ggrave-red" : ""}>
+                    {genre}
+                  </span>
                 </label>
               ))}
             </div>
@@ -203,7 +205,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filter, onFilterChange })
                     onChange={() => updatePlatform(platform)}
                     className="rounded border-gray-700 text-ggrave-red focus:ring-ggrave-red"
                   />
-                  <span>{platform}</span>
+                  <span className={filter.platforms.includes(platform) ? "text-ggrave-red" : ""}>
+                    {platform}
+                  </span>
                 </label>
               ))}
             </div>
@@ -251,7 +255,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filter, onFilterChange })
                   ...filter,
                   priceRange: [filter.priceRange[0], parseInt(e.target.value)]
                 })}
-                className="w-full"
+                className="w-full accent-ggrave-red"
               />
             </div>
           </div>
@@ -278,7 +282,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filter, onFilterChange })
                   onChange={() => updateReleaseStatus(status)}
                   className="rounded border-gray-700 text-ggrave-red focus:ring-ggrave-red"
                 />
-                <span>{status}</span>
+                <span className={filter.releaseStatus.includes(status) ? "text-ggrave-red" : ""}>
+                  {status}
+                </span>
               </label>
             ))}
           </div>
