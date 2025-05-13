@@ -6,7 +6,7 @@ import {
   Compass, // Adventure
   Sword, // RPG
   Grid3X3, // Strategy
-  Puzzle, // Puzzle - replacing PuzzlePiece which doesn't exist
+  Puzzle, // Puzzle
   Monitor, // Simulation
   Gamepad, // Platformer
   Target, // Shooter
@@ -67,7 +67,7 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ filter, onFilterChang
   };
 
   return (
-    <div className="bg-[#181818] border border-gray-800 rounded-sm p-4">
+    <div className="bg-[#181818] border border-gray-800 rounded-sm p-4 h-full">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-pixel text-white text-sm">Categories</h3>
         {filter.genres.length > 0 && (

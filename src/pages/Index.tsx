@@ -1,13 +1,9 @@
-
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
 import GameGrid from '../components/GameGrid';
-import GameCard from '../components/GameCard';
 import CategoryFilters from '../components/CategoryFilters';
-import HeroFilter from '../components/HeroFilter';
-import FeaturedDeveloper from '../components/FeaturedDeveloper';
-import { FilterState, Game, Developer } from '../types';
+import { FilterState, Game } from '../types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -269,133 +265,134 @@ const Index: React.FC = () => {
       <Navbar />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Hero Section with Gallery and Text/Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          {/* Gallery taking 2/3 of the screen */}
-          <div className="md:w-2/3">
-            <GameCarousel games={featuredGames} title="FEATURED GAMES" />
-          </div>
-          
-          {/* Right side with text and discord */}
-          <div className="md:w-1/3 flex flex-col gap-4">
-            <div>
-              <h1 className="font-pixel text-white text-lg md:text-xl mb-2 animate-flicker">
-                Game Over?
-              </h1>
+        {/* Hero Section - Restructured for seamless integration */}
+        <div className="mb-8">
+          {/* Hero Row with Gallery and Right Side Content */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Left side Gallery - Takes up more space */}
+            <div className="lg:w-2/3">
+              <GameCarousel games={featuredGames} title="FEATURED GAMES" />
+            </div>
+            
+            {/* Right side with text, discord and categories */}
+            <div className="lg:w-1/3 flex flex-col">
+              {/* "Game Over?" text block */}
+              <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
+                <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
+                  Game Over?
+                </h1>
+                
+                <Separator className="my-3 bg-gray-700" />
+                
+                <p className="font-pixel text-ggrave-red text-sm">
+                  Dig Up Your Next Adventure.
+                </p>
+                
+                {/* Discord Link */}
+                <div className="mt-4">
+                  <p className="text-white font-pixel mb-2">Discord:</p>
+                  <a 
+                    href="https://discord.gg/ASJyTrZ" 
+                    className="inline-block"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <Button variant="default" className="bg-ggrave-red hover:bg-ggrave-red/90">
+                      Join our server
+                    </Button>
+                  </a>
+                </div>
+              </div>
               
-              <Separator className="my-2 bg-gray-700" />
-              
-              <p className="font-pixel text-ggrave-red text-sm md:text-base mb-4">
-                Dig Up Your Next Adventure.
-              </p>
-              
-              {/* Discord Link with updated button */}
-              <div className="mb-4">
-                <p className="text-white font-pixel mb-2">Discord:</p>
-                <a 
-                  href="https://discord.gg/ASJyTrZ" 
-                  className="inline-block"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <Button variant="default" className="bg-ggrave-red hover:bg-ggrave-red/90">
-                    Join our server
-                  </Button>
-                </a>
+              {/* Category Filters - Moved into the hero section */}
+              <div className="flex-grow">
+                <CategoryFilters filter={filter} onFilterChange={setFilter} />
               </div>
             </div>
           </div>
         </div>
         
-        {/* Main content area with game grid and filter sidebar */}
-        <div className="flex flex-col-reverse md:flex-row gap-6">
-          {/* Main content area */}
-          <div className="flex-1">
-            {/* Game Grid with Tabs */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <Tabs 
-                  defaultValue="ripe" 
-                  className="w-full"
-                  onValueChange={(value) => setActiveTab(value)}
+        {/* Game Grid Section - Full width, max 3 items per row */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <Tabs 
+              defaultValue="ripe" 
+              className="w-full"
+              onValueChange={(value) => setActiveTab(value)}
+            >
+              <TabsList className="bg-[#181818] border border-gray-700">
+                <TabsTrigger 
+                  value="ripe" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
                 >
-                  <TabsList className="bg-[#181818] border border-gray-700">
-                    <TabsTrigger 
-                      value="ripe" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
-                    >
-                      🍌 Ripe
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="new" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
-                    >
-                      + New
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="updated" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
-                    >
-                      ↻ Updated
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {getTabGames().map((game) => (
-                  <GameCard key={game.id} game={game} />
-                ))}
-              </div>
-            </div>
-            
-            {/* Community Buzz Section */}
-            <div className="mt-8">
-              <div className="bg-[#181818] mb-4 p-2 border-l-4 border-ggrave-red">
-                <h2 className="font-pixel text-white text-xs md:text-sm">COMMUNITY BUZZ</h2>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Community post items with enhanced visuals */}
-                <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">RS</div>
-                    <h3 className="text-white font-medium text-sm">Best Indie RPGs of 2023</h3>
-                  </div>
-                  <p className="text-gray-400 text-xs mb-2">
-                    Discussion thread with <span className="text-white">128</span> comments
-                  </p>
-                  <a href="/community/topic/123" className="text-ggrave-red text-xs hover:underline">Join Discussion</a>
-                </div>
-                
-                <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">PA</div>
-                    <h3 className="text-white font-medium text-sm">Hidden Pixel Art Gems</h3>
-                  </div>
-                  <p className="text-gray-400 text-xs mb-2">
-                    Review compilation with <span className="text-white">95</span> submissions
-                  </p>
-                  <a href="/community/topic/456" className="text-ggrave-red text-xs hover:underline">Read Reviews</a>
-                </div>
-                
-                <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">RS</div>
-                    <h3 className="text-white font-medium text-sm">Indie Dev AMA: RetroStudio</h3>
-                  </div>
-                  <p className="text-gray-400 text-xs mb-2">
-                    Live Q&A happening <span className="bg-ggrave-red px-1 py-0.5 text-[9px] rounded-sm text-white">NOW</span>
-                  </p>
-                  <a href="/community/topic/789" className="text-ggrave-red text-xs hover:underline">Ask Questions</a>
-                </div>
-              </div>
-            </div>
+                  🍌 Ripe
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="new" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                >
+                  + New
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="updated" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                >
+                  ↻ Updated
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           
-          {/* Right sidebar for filters - Now using the new CategoryFilters component */}
-          <div className="md:w-64 shrink-0">
-            <CategoryFilters filter={filter} onFilterChange={setFilter} />
+          {/* Game Grid with larger items, max 3 per row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getTabGames().map((game) => (
+              <div key={game.id} className="flex">
+                <GameCard game={game} />
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Community Buzz Section */}
+        <div className="mt-8">
+          <div className="bg-[#181818] mb-4 p-2 border-l-4 border-ggrave-red">
+            <h2 className="font-pixel text-white text-xs md:text-sm">COMMUNITY BUZZ</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Community post items with enhanced visuals */}
+            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
+              <div className="flex items-center mb-2">
+                <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">RS</div>
+                <h3 className="text-white font-medium text-sm">Best Indie RPGs of 2023</h3>
+              </div>
+              <p className="text-gray-400 text-xs mb-2">
+                Discussion thread with <span className="text-white">128</span> comments
+              </p>
+              <a href="/community/topic/123" className="text-ggrave-red text-xs hover:underline">Join Discussion</a>
+            </div>
+            
+            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
+              <div className="flex items-center mb-2">
+                <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">PA</div>
+                <h3 className="text-white font-medium text-sm">Hidden Pixel Art Gems</h3>
+              </div>
+              <p className="text-gray-400 text-xs mb-2">
+                Review compilation with <span className="text-white">95</span> submissions
+              </p>
+              <a href="/community/topic/456" className="text-ggrave-red text-xs hover:underline">Read Reviews</a>
+            </div>
+            
+            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
+              <div className="flex items-center mb-2">
+                <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">RS</div>
+                <h3 className="text-white font-medium text-sm">Indie Dev AMA: RetroStudio</h3>
+              </div>
+              <p className="text-gray-400 text-xs mb-2">
+                Live Q&A happening <span className="bg-ggrave-red px-1 py-0.5 text-[9px] rounded-sm text-white">NOW</span>
+              </p>
+              <a href="/community/topic/789" className="text-ggrave-red text-xs hover:underline">Ask Questions</a>
+            </div>
           </div>
         </div>
       </main>
