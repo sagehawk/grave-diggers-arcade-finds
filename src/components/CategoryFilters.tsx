@@ -130,14 +130,6 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ filter, onFilterChang
             );
           })}
         </div>
-        
-        <Button 
-          variant="outline"
-          size="sm"
-          className="w-full text-xs bg-[#333333] border-gray-700 text-gray-300 hover:bg-gray-700"
-        >
-          Advanced Filters
-        </Button>
       </div>
       
       {/* Categories Section */}

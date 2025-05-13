@@ -10,7 +10,6 @@ import { FilterState, Game } from '../types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import GameCard from '../components/GameCard';
 import { Flame, Star, ArrowUp, Filter, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 
@@ -271,21 +270,124 @@ const Index: React.FC = () => {
       <Navbar />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Main layout with hero section and content below */}
+        {/* Main layout with two primary columns */}
         <div className="flex flex-col space-y-6">
-          {/* Hero Section with two columns on desktop */}
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left column: Game Carousel */}
-            <div className="w-full lg:w-2/3">
+          {/* Two-column layout for desktop: Left column (wider) and Right column (narrower) */}
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Left Column Area (Wider) */}
+            <div className="w-full md:w-2/3">
+              {/* Top: Hero Gallery */}
               <GameCarousel games={featuredGames} title="FEATURED GAMES" />
+              
+              {/* Middle: Tabs section - Full width with filter button for mobile */}
+              <div className="flex items-center justify-between mb-6">
+                <Tabs 
+                  defaultValue="ripe" 
+                  className="flex-1"
+                  onValueChange={(value) => setActiveTab(value)}
+                >
+                  <TabsList className="bg-[#181818] border border-gray-700">
+                    <TabsTrigger 
+                      value="ripe" 
+                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                    >
+                      <Flame size={16} /> Ripe
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="new" 
+                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                    >
+                      <Star size={16} /> New
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="updated" 
+                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                    >
+                      <ArrowUp size={16} /> Updated
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                
+                {/* Mobile filter button */}
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 md:hidden bg-[#181818] border-gray-700"
+                    >
+                      <Filter size={16} className="mr-1" /> Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[85vw] sm:w-[350px] p-0 bg-ggrave-black border-gray-800">
+                    <div className="p-4 flex justify-between items-center border-b border-gray-800">
+                      <h3 className="font-pixel text-white text-sm">Filters</h3>
+                      <SheetClose asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </SheetClose>
+                    </div>
+                    <div className="p-4 overflow-y-auto h-full">
+                      {/* Welcome Section */}
+                      <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
+                        <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
+                          Welcome
+                        </h1>
+                        
+                        <Separator className="my-3 bg-gray-700" />
+                        
+                        <p className="font-pixel text-ggrave-red text-sm">
+                          Dig Up Your Next Adventure.
+                        </p>
+                        
+                        {/* Discord Link */}
+                        <div className="mt-4">
+                          <p className="text-white font-pixel mb-2">Discord:</p>
+                          <a 
+                            href="https://discord.gg/ASJyTrZ" 
+                            className="inline-block"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            <Button variant="default" className="bg-ggrave-red hover:bg-ggrave-red/90">
+                              Join our server
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                      
+                      {/* Filter Sidebar */}
+                      <FilterSidebar filter={filter} onFilterChange={setFilter} />
+                      
+                      {/* Category Filters */}
+                      <div className="mt-4">
+                        <CategoryFilters filter={filter} onFilterChange={setFilter} />
+                      </div>
+                      
+                      {/* Community Buzz Section for mobile */}
+                      <div className="mt-4 md:hidden">
+                        <CommunityBuzzSection />
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+              
+              {/* Bottom: Game Grid */}
+              <GameGrid 
+                games={getTabGames()} 
+                title={activeTab.toUpperCase()} 
+                viewAllLink={`/games/${activeTab}`}
+              />
             </div>
             
-            {/* Right column: Game Over text, Discord, Filters */}
-            <div className="w-full lg:w-1/3 space-y-4">
-              {/* "Game Over?" text block */}
+            {/* Right Column Area (Narrower) - The continuous sidebar */}
+            <div className="w-full md:w-1/3 space-y-4 hidden md:block">
+              {/* Welcome text block (formerly "Game Over?") */}
               <div className="bg-[#181818] border border-gray-800 p-4">
                 <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
-                  Game Over?
+                  Welcome
                 </h1>
                 
                 <Separator className="my-3 bg-gray-700" />
@@ -314,78 +416,8 @@ const Index: React.FC = () => {
               <div>
                 <CategoryFilters filter={filter} onFilterChange={setFilter} />
               </div>
-            </div>
-          </div>
-          
-          {/* Tabs section - Full width with filter button for mobile */}
-          <div className="flex items-center justify-between">
-            <Tabs 
-              defaultValue="ripe" 
-              className="flex-1"
-              onValueChange={(value) => setActiveTab(value)}
-            >
-              <TabsList className="bg-[#181818] border border-gray-700">
-                <TabsTrigger 
-                  value="ripe" 
-                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
-                >
-                  <Flame size={16} /> Ripe
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="new" 
-                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
-                >
-                  <Star size={16} /> New
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="updated" 
-                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
-                >
-                  <ArrowUp size={16} /> Updated
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            
-            {/* Mobile filter button */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="ml-2 lg:hidden bg-[#181818] border-gray-700"
-                >
-                  <Filter size={16} className="mr-1" /> Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:w-[350px] p-0 bg-ggrave-black border-gray-800">
-                <div className="p-4 flex justify-between items-center border-b border-gray-800">
-                  <h3 className="font-pixel text-white text-sm">Filters</h3>
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </SheetClose>
-                </div>
-                <div className="p-4">
-                  <FilterSidebar filter={filter} onFilterChange={setFilter} />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-          
-          {/* Main content with Game Grid (left) and Community Buzz (right) */}
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left Column - Game Grid (Wider) */}
-            <div className="w-full lg:w-2/3">
-              <GameGrid 
-                games={getTabGames()} 
-                title={activeTab.toUpperCase()} 
-                viewAllLink={`/games/${activeTab}`}
-              />
-            </div>
-            
-            {/* Right Column - Community Buzz (Narrower) */}
-            <div className="w-full lg:w-1/3">
+              
+              {/* Community Buzz Section */}
               <CommunityBuzzSection />
             </div>
           </div>
