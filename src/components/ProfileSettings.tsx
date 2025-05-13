@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
   Form, 
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '../context/AuthContext';
 import { User } from '../types/auth';
+import { Loader2 } from 'lucide-react';
 
 interface ProfileSettingsProps {
   user: User;
@@ -31,6 +32,7 @@ interface ProfileFormData {
 
 const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   const { updateUserProfile, changePassword } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<ProfileFormData>({
     defaultValues: {
@@ -44,27 +46,35 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
   });
 
   const onSubmit = async (data: ProfileFormData) => {
-    // Update profile if bio has changed
-    if (data.bio !== user.bio) {
-      await updateUserProfile({ bio: data.bio });
-    }
-    
-    // Change password if new password is provided
-    if (data.currentPassword && data.newPassword) {
-      if (data.newPassword !== data.confirmNewPassword) {
-        form.setError('confirmNewPassword', {
-          type: 'manual',
-          message: 'Passwords do not match',
-        });
-        return;
+    setIsSubmitting(true);
+    try {
+      // Update profile if bio has changed
+      if (data.bio !== user.bio) {
+        await updateUserProfile({ bio: data.bio });
       }
       
-      await changePassword(data.currentPassword, data.newPassword);
-      
-      // Clear password fields
-      form.setValue('currentPassword', '');
-      form.setValue('newPassword', '');
-      form.setValue('confirmNewPassword', '');
+      // Change password if new password is provided
+      if (data.currentPassword && data.newPassword) {
+        if (data.newPassword !== data.confirmNewPassword) {
+          form.setError('confirmNewPassword', {
+            type: 'manual',
+            message: 'Passwords do not match',
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        await changePassword(data.currentPassword, data.newPassword);
+        
+        // Clear password fields
+        form.setValue('currentPassword', '');
+        form.setValue('newPassword', '');
+        form.setValue('confirmNewPassword', '');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -204,8 +214,16 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
           <Button 
             type="submit" 
             className="bg-ggrave-red hover:bg-red-700"
+            disabled={isSubmitting}
           >
-            Save Changes
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
           </Button>
         </form>
       </Form>

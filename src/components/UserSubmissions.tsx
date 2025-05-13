@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Pencil, 
   Trash2, 
@@ -39,42 +39,25 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({ userId, isOwnProfile 
       setIsLoading(true);
       
       try {
-        // In a real implementation, fetch submissions from Supabase
-        // For now, we'll create mock data
-        const mockSubmissions = [
-          {
-            id: 'game1',
-            title: 'Cosmic Crusaders',
-            thumbnail: 'https://i.imgur.com/3ZwBGux.jpeg',
-            status: isOwnProfile ? 'pending' : 'published',
-            createdAt: '2023-05-15T10:20:30Z',
-            views: 1245,
-            likes: 87,
-            comments: 32,
-          },
-          {
-            id: 'game2',
-            title: 'Pixel Dungeon Master',
-            thumbnail: 'https://i.imgur.com/wmZSVPX.jpeg',
-            status: 'published',
-            createdAt: '2023-04-10T14:25:10Z',
-            views: 3782,
-            likes: 215,
-            comments: 48,
-          },
-          {
-            id: 'game3',
-            title: 'Galactic Pirate Saga',
-            thumbnail: 'https://i.imgur.com/CzXHxTe.jpeg',
-            status: isOwnProfile ? 'rejected' : 'published',
-            createdAt: '2023-03-22T09:15:45Z',
-            views: 960,
-            likes: 42,
-            comments: 18,
-          }
-        ];
+        // For personal profiles, fetch all submissions regardless of status
+        // For public profiles, only fetch published ones
+        const query = supabase
+          .from('games')
+          .select('*')
+          .eq('submitter_user_id', userId);
+          
+        if (!isOwnProfile) {
+          query.eq('status', 'published');
+        }
         
-        setSubmissions(mockSubmissions);
+        // Order by most recent first
+        query.order('createdAt', { ascending: false });
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        setSubmissions(data || []);
       } catch (error) {
         console.error('Error fetching submissions:', error);
         toast({
@@ -103,8 +86,41 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({ userId, isOwnProfile 
     if (!gameToDelete) return;
     
     try {
-      // In a real implementation, delete or mark as deleted in Supabase
-      console.log('Deleting game:', gameToDelete.id);
+      // Delete the game record
+      const { error: deleteError } = await supabase
+        .from('games')
+        .delete()
+        .eq('id', gameToDelete.id);
+        
+      if (deleteError) throw deleteError;
+      
+      // Try to delete associated images from storage
+      if (gameToDelete.thumbnail) {
+        try {
+          const thumbnailPath = gameToDelete.thumbnail.split('/').slice(-1)[0];
+          await supabase.storage
+            .from('games')
+            .remove([`game-thumbnails/${userId}/${thumbnailPath}`]);
+        } catch (storageError) {
+          console.error('Error deleting thumbnail:', storageError);
+          // Continue even if image deletion fails
+        }
+      }
+      
+      // Try to delete gallery images
+      if (gameToDelete.mediaGallery && Array.isArray(gameToDelete.mediaGallery)) {
+        for (const imageUrl of gameToDelete.mediaGallery) {
+          try {
+            const imagePath = imageUrl.split('/').slice(-1)[0];
+            await supabase.storage
+              .from('games')
+              .remove([`game-galleries/${userId}/${imagePath}`]);
+          } catch (storageError) {
+            console.error('Error deleting gallery image:', storageError);
+            // Continue even if image deletion fails
+          }
+        }
+      }
       
       // Remove from local state
       setSubmissions(submissions.filter(game => game.id !== gameToDelete.id));
@@ -175,9 +191,12 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({ userId, isOwnProfile 
           <Card key={game.id} className="bg-gray-900 border-gray-800 overflow-hidden">
             <div className="relative aspect-video">
               <img 
-                src={game.thumbnail} 
+                src={game.thumbnail || 'https://placehold.co/600x400?text=No+Image'} 
                 alt={game.title} 
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Error+Loading+Image';
+                }}
               />
               {isOwnProfile && (
                 <div className="absolute top-2 right-2">
@@ -188,24 +207,22 @@ const UserSubmissions: React.FC<UserSubmissionsProps> = ({ userId, isOwnProfile 
             
             <CardContent className="p-4">
               <h3 className="text-lg font-semibold text-white mb-2">{game.title}</h3>
-              {isOwnProfile && (
-                <p className="text-gray-400 text-sm mb-2">
-                  Submitted on {new Date(game.createdAt).toLocaleDateString()}
-                </p>
-              )}
+              <p className="text-gray-400 text-sm mb-2">
+                Submitted on {new Date(game.createdAt).toLocaleDateString()}
+              </p>
               
               <div className="flex items-center space-x-4 text-gray-400 text-sm">
                 <div className="flex items-center">
                   <Eye size={14} className="mr-1" />
-                  <span>{game.views}</span>
+                  <span>{game.views || 0}</span>
                 </div>
                 <div className="flex items-center">
                   <ThumbsUp size={14} className="mr-1" />
-                  <span>{game.likes}</span>
+                  <span>{game.likes || 0}</span>
                 </div>
                 <div className="flex items-center">
                   <MessageSquare size={14} className="mr-1" />
-                  <span>{game.comments}</span>
+                  <span>{game.comments || 0}</span>
                 </div>
               </div>
             </CardContent>

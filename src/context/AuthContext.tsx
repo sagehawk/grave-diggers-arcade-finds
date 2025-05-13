@@ -2,7 +2,8 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { User } from '../types/auth';
 import { supabase } from '../lib/supabase';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
@@ -36,73 +37,184 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Check if user is already logged in (from localStorage)
+  // Check if user is already logged in (using Supabase session)
   useEffect(() => {
     const checkSession = async () => {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (error) {
-          console.error('Failed to parse stored user:', error);
-          localStorage.removeItem('user');
+      try {
+        // Get session from Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          await handleSessionChange(session);
+        }
+      } catch (error) {
+        console.error('Failed to check auth session:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session) {
+          await handleSessionChange(session);
+        } else {
+          setUser(null);
         }
       }
-      setIsLoading(false);
-    };
+    );
 
     checkSession();
+    
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+  
+  // Helper function to handle session changes
+  const handleSessionChange = async (session: Session) => {
+    try {
+      const userId = session.user.id;
+      
+      // Get user profile from public profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (profileError) {
+        throw profileError;
+      }
+      
+      setUser({
+        id: userId,
+        email: session.user.email || '',
+        username: profile?.username || session.user.email?.split('@')[0] || 'User',
+        createdAt: profile?.created_at ? new Date(profile.created_at) : new Date(),
+        avatarUrl: profile?.avatar_url || undefined,
+        bio: profile?.bio || undefined
+      });
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      // Still set basic user info from session
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          username: session.user.email?.split('@')[0] || 'User',
+          createdAt: new Date(),
+        });
+      }
+    }
+  };
 
-  // Login function
+  // Login function using Supabase
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // This is a mock implementation - in a real app, this would call an API
-      const mockUser: User = {
-        id: `user_${Math.random().toString(36).substr(2, 9)}`,
-        username: email.split('@')[0],
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        createdAt: new Date(),
-      };
-
-      // Store user in localStorage
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
+        password
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+      
       return true;
     } catch (error) {
       console.error('Login failed:', error);
+      
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Please check your email and password",
+        variant: "destructive",
+      });
+      
       return false;
     }
   };
 
-  // Signup function
+  // Signup function using Supabase
   const signup = async (username: string, email: string, password: string): Promise<boolean> => {
     try {
-      // Create a user in Supabase (for demonstration - typically you'd use Supabase Auth)
-      const newUserId = `user_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // For now, we're just using a mock user
-      const mockUser: User = {
-        id: newUserId,
-        username,
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        createdAt: new Date(),
-      };
-
-      // Store user in localStorage
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
+        password,
+        options: {
+          data: {
+            username,
+          }
+        }
+      });
+      
+      if (authError) throw authError;
+      
+      // Create a profile entry in the public profiles table
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            username,
+            email,
+            created_at: new Date().toISOString(),
+          });
+          
+        if (profileError) {
+          console.error('Profile creation failed:', profileError);
+          toast({
+            title: "Profile setup issue",
+            description: "Your account was created but there was an issue setting up your profile.",
+            variant: "destructive",
+          });
+        }
+      }
+      
+      toast({
+        title: "Registration successful",
+        description: "Welcome to GamerGrave!",
+      });
+      
       return true;
     } catch (error) {
       console.error('Signup failed:', error);
+      
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
+      
       return false;
     }
   };
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
+  // Logout function with Supabase
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      
+      toast({
+        title: "Logout failed",
+        description: "An error occurred while trying to log out.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Update user profile
@@ -110,11 +222,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!user) return false;
 
     try {
-      // In a real implementation, you would update the user profile in Supabase
-      // For now, we'll just update the user in localStorage
-      const updatedUser = { ...user, ...data };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      // Update the profile in the profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          bio: data.bio,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      // Update local user state
+      setUser(prev => prev ? { ...prev, ...data } : null);
       
       toast({
         title: "Profile updated",
@@ -137,11 +257,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Change password
   const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    if (!user) return false;
-
     try {
-      // In a real implementation, you would verify the current password and update it in Supabase
-      // For now, we'll just show a success message
+      // First verify current password by trying to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword
+      });
+      
+      if (signInError) throw new Error('Current password is incorrect');
+      
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (updateError) throw updateError;
       
       toast({
         title: "Password changed",
@@ -154,7 +284,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       toast({
         title: "Password change failed",
-        description: "Failed to change your password. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to change your password. Please try again.",
         variant: "destructive"
       });
       

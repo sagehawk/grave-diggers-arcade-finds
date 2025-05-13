@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -137,9 +138,9 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+interface Toast extends Omit<ToasterToast, "id"> {} // Fixed the error by using interface
 
-function toast({ ...props }: Toast) {
+function toast(props: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>

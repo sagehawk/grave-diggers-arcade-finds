@@ -5,10 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import Navbar from '../components/Navbar';
 import UserSubmissions from '../components/UserSubmissions';
 import ProfileSettings from '../components/ProfileSettings';
+import { Loader2 } from 'lucide-react';
 
 const UserAccount: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -44,20 +45,43 @@ const UserAccount: React.FC = () => {
       if (isAuthenticated && user && user.username === username) {
         setIsOwnProfile(true);
         setProfileUser(user);
-      } else {
-        setIsOwnProfile(false);
-        // In a real implementation, fetch the user data from Supabase
-        // For now, we'll create a mock user for demonstration
-        const mockProfileUser = {
-          id: 'profile_user_id',
-          username: username,
-          createdAt: new Date().toISOString(),
-          bio: 'This is a mock user profile.',
-        };
-        setProfileUser(mockProfileUser);
+        setIsLoading(false);
+        return;
       }
       
-      setIsLoading(false);
+      // If not own profile, fetch user data from Supabase
+      try {
+        setIsOwnProfile(false);
+        
+        // Get user by username from profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('username', username)
+          .single();
+          
+        if (profileError) {
+          throw new Error('User not found');
+        }
+        
+        setProfileUser({
+          id: profileData.id,
+          username: profileData.username,
+          createdAt: new Date(profileData.created_at),
+          bio: profileData.bio,
+          avatarUrl: profileData.avatar_url
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setProfileUser(null);
+        toast({
+          title: "User not found",
+          description: "The requested user profile could not be found.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchUserData();
@@ -67,8 +91,8 @@ const UserAccount: React.FC = () => {
     return (
       <div className="min-h-screen bg-ggrave-black text-white">
         <Navbar />
-        <div className="max-w-[1440px] mx-auto px-4 py-8">
-          <p className="text-center">Loading...</p>
+        <div className="max-w-[1440px] mx-auto px-4 py-8 flex items-center justify-center">
+          <Loader2 size={40} className="animate-spin text-ggrave-red" />
         </div>
       </div>
     );
