@@ -4,6 +4,7 @@ import Index from './pages/Index';
 import GameDetail from './pages/GameDetail';
 import NotFound from './pages/NotFound';
 import SubmitGame from './pages/SubmitGame';
+import UserAccount from './pages/UserAccount';
 import { AuthProvider } from './context/AuthContext';
 import './App.css';
 import { Toaster } from './components/ui/toaster';
@@ -17,6 +18,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/games/:id" element={<GameDetail />} />
             <Route path="/submit-game" element={<SubmitGame />} />
+            <Route path="/account/:username" element={<UserAccount />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

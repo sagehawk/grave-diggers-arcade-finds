@@ -5,6 +5,7 @@ export interface User {
   email: string;
   createdAt: Date;
   avatarUrl?: string;
+  bio?: string;
 }
 
 export interface SignUpFormData {

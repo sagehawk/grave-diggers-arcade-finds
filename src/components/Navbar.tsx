@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import { useToast } from "@/components/ui/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar: React.FC = () => {
   const [searchFocused, setSearchFocused] = useState(false);
@@ -82,19 +90,30 @@ const Navbar: React.FC = () => {
             {/* Authentication Controls */}
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center space-x-2">
-                <Link to="/profile">
-                  <Button variant="outline" size="sm" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray flex items-center gap-2">
-                    <User size={14} /> {user?.username || 'Profile'}
-                  </Button>
-                </Link>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray"
-                  onClick={handleLogout}
-                >
-                  <LogOut size={14} />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray flex items-center gap-2">
+                      <User size={14} /> {user?.username || 'Profile'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-gray-900 border border-gray-800 text-white">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-gray-800" />
+                    <DropdownMenuItem 
+                      className="hover:bg-gray-800 cursor-pointer"
+                      onClick={() => navigate('/account/me')}
+                    >
+                      <User size={14} className="mr-2" /> Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-gray-800" />
+                    <DropdownMenuItem 
+                      className="hover:bg-gray-800 cursor-pointer text-red-400"
+                      onClick={handleLogout}
+                    >
+                      <LogOut size={14} className="mr-2" /> Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <div className="hidden sm:block">
