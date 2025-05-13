@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Game } from '../types';
-import { Heart, MessageSquare, Eye, Windows, Apple, Linux, Steam, Gamepad, Xbox } from 'lucide-react';
+import { Heart, MessageSquare, Eye, Monitor, Apple, Gamepad, Box } from 'lucide-react';
 
 interface GameCardProps {
   game: Game;
@@ -36,13 +36,13 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
   // Map platform to icon
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
-      case 'windows': return <Windows size={14} className="text-gray-300" />;
+      case 'windows': return <Monitor size={14} className="text-gray-300" />;
       case 'mac': return <Apple size={14} className="text-gray-300" />;
-      case 'linux': return <Linux size={14} className="text-gray-300" />;
-      case 'steam': return <Steam size={14} className="text-gray-300" />;
+      case 'linux': return <Box size={14} className="text-gray-300" />;
+      case 'steam': return <Gamepad size={14} className="text-gray-300" />;
       case 'switch': return <Gamepad size={14} className="text-gray-300" />;
       case 'playstation': return <Gamepad size={14} className="text-gray-300" />;
-      case 'xbox': return <Xbox size={14} className="text-gray-300" />;
+      case 'xbox': return <Gamepad size={14} className="text-gray-300" />;
       default: return null;
     }
   };
