@@ -9,11 +9,13 @@ import { Toaster } from './components/ui/toaster';
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/games/:id" element={<GameDetail />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <div className="max-w-[1360px] mx-auto">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/games/:id" element={<GameDetail />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
       <Toaster />
     </Router>
   );

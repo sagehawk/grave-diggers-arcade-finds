@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
@@ -280,7 +279,7 @@ const Index: React.FC = () => {
               <GameCarousel games={featuredGames} title="FEATURED GAMES" />
               
               {/* Middle: Tabs section - Full width with filter button for mobile */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 mt-8">
                 <Tabs 
                   defaultValue="ripe" 
                   className="flex-1"
@@ -289,19 +288,19 @@ const Index: React.FC = () => {
                   <TabsList className="bg-[#181818] border border-gray-700">
                     <TabsTrigger 
                       value="ripe" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1 transition-colors"
                     >
                       <Flame size={16} /> Ripe
                     </TabsTrigger>
                     <TabsTrigger 
                       value="new" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1 transition-colors"
                     >
                       <Star size={16} /> New
                     </TabsTrigger>
                     <TabsTrigger 
                       value="updated" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
+                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1 transition-colors"
                     >
                       <ArrowUp size={16} /> Updated
                     </TabsTrigger>
@@ -314,7 +313,7 @@ const Index: React.FC = () => {
                     <Button 
                       variant="outline"
                       size="sm"
-                      className="ml-2 md:hidden bg-[#181818] border-gray-700"
+                      className="ml-2 md:hidden bg-[#181818] border-gray-700 hover:bg-[#222222] transition-colors"
                     >
                       <Filter size={16} className="mr-1" /> Filters
                     </Button>
@@ -323,23 +322,17 @@ const Index: React.FC = () => {
                     <div className="p-4 flex justify-between items-center border-b border-gray-800">
                       <h3 className="font-pixel text-white text-sm">Filters</h3>
                       <SheetClose asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-800 transition-colors">
                           <X className="h-4 w-4" />
-                        </Button>
+                        </SheetClose>
                       </SheetClose>
                     </div>
                     <div className="p-4 overflow-y-auto h-full">
                       {/* Welcome Section */}
                       <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
                         <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
-                          Welcome
+                          Welcome to GamerGrave
                         </h1>
-                        
-                        <Separator className="my-3 bg-gray-700" />
-                        
-                        <p className="font-pixel text-ggrave-red text-sm">
-                          Dig Up Your Next Adventure.
-                        </p>
                         
                         {/* Discord Link */}
                         <div className="mt-4">
@@ -350,7 +343,7 @@ const Index: React.FC = () => {
                             rel="noopener noreferrer"
                             target="_blank"
                           >
-                            <Button variant="default" className="bg-ggrave-red hover:bg-ggrave-red/90">
+                            <Button variant="default" className="bg-ggrave-red hover:bg-red-700 transition-colors">
                               Join our server
                             </Button>
                           </a>
@@ -366,7 +359,7 @@ const Index: React.FC = () => {
                       </div>
                       
                       {/* Community Buzz Section for mobile */}
-                      <div className="mt-4 md:hidden">
+                      <div className="mt-6 md:hidden">
                         <CommunityBuzzSection />
                       </div>
                     </div>
@@ -383,29 +376,26 @@ const Index: React.FC = () => {
             </div>
             
             {/* Right Column Area (Narrower) - The continuous sidebar */}
-            <div className="w-full md:w-1/3 space-y-4 hidden md:block">
-              {/* Welcome text block (formerly "Game Over?") */}
-              <div className="bg-[#181818] border border-gray-800 p-4">
+            <div className="w-full md:w-1/3 space-y-6 hidden md:block">
+              {/* Welcome text block */}
+              <div className="bg-[#181818] border border-gray-800 p-5 hover:border-gray-700 transition-all">
                 <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
-                  Welcome
+                  Welcome to GamerGrave
                 </h1>
                 
-                <Separator className="my-3 bg-gray-700" />
-                
-                <p className="font-pixel text-ggrave-red text-sm">
-                  Dig Up Your Next Adventure.
-                </p>
-                
                 {/* Discord Link */}
-                <div className="mt-4">
-                  <p className="text-white font-pixel mb-2">Discord:</p>
+                <div className="mt-5">
+                  <p className="text-white font-pixel mb-3">Discord:</p>
                   <a 
                     href="https://discord.gg/ASJyTrZ" 
                     className="inline-block"
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    <Button variant="default" className="bg-ggrave-red hover:bg-ggrave-red/90">
+                    <Button 
+                      variant="default" 
+                      className="bg-ggrave-red hover:bg-red-700 transition-colors focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
+                    >
                       Join our server
                     </Button>
                   </a>
@@ -413,7 +403,7 @@ const Index: React.FC = () => {
               </div>
               
               {/* Category Filters */}
-              <div>
+              <div className="hover:border-gray-700 transition-all">
                 <CategoryFilters filter={filter} onFilterChange={setFilter} />
               </div>
               
@@ -424,21 +414,21 @@ const Index: React.FC = () => {
         </div>
         
         {/* Footer section */}
-        <footer className="bg-[#181818] border-t border-gray-800 py-6 mt-8">
+        <footer className="bg-[#181818] border-t border-gray-800 py-8 mt-12">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="mb-4 md:mb-0">
+              <div className="mb-6 md:mb-0">
                 <img 
                   src="https://i.imgur.com/ItKyOPt.jpeg" 
                   alt="GamerGrave Logo" 
-                  className="h-6 mb-2"
+                  className="h-8 mb-4"
                 />
                 <p className="text-gray-400 text-xs">
                   © 2023 GamerGrave. All rights reserved.
                 </p>
               </div>
               
-              <div className="flex space-x-6">
+              <div className="flex flex-wrap justify-center gap-6 md:gap-8">
                 <a href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">About</a>
                 <a href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">Contact</a>
                 <a href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy</a>

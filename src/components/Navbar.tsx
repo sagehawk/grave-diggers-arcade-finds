@@ -18,7 +18,7 @@ const Navbar: React.FC = () => {
               <img 
                 src="https://i.imgur.com/ItKyOPt.jpeg" 
                 alt="GamerGrave Logo" 
-                className="h-8"
+                className="h-10 sm:h-12" // Increased logo size
               />
             </Link>
           </div>
@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
               </div>
             ) : (
               <button 
-                className="p-1 text-gray-400 hover:text-white focus:outline-none" 
+                className="p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50 rounded" 
                 onClick={() => setSearchOpen(true)}
               >
                 <Search size={20} />
@@ -59,10 +59,10 @@ const Navbar: React.FC = () => {
             
             {/* Login/Sign Up */}
             <div className="hidden md:block">
-              <Button variant="outline" size="sm" className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red mr-2">
+              <Button variant="outline" size="sm" className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red mr-2 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50">
                 Log In
               </Button>
-              <Button size="sm" className="bg-ggrave-red text-white hover:bg-red-700">
+              <Button size="sm" className="bg-ggrave-red text-white hover:bg-red-700 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50">
                 Sign Up
               </Button>
             </div>
@@ -77,7 +77,7 @@ const Navbar: React.FC = () => {
             {/* Mobile menu button */}
             <div className="md:hidden">
               <button 
-                className="text-gray-400 hover:text-white focus:outline-none"
+                className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50 rounded"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? (
@@ -124,10 +124,10 @@ const Navbar: React.FC = () => {
               Submit
             </Link>
             <div className="flex space-x-2 px-3 py-2">
-              <Button variant="outline" size="sm" className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red">
+              <Button variant="outline" size="sm" className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50">
                 Log In
               </Button>
-              <Button size="sm" className="bg-ggrave-red text-white hover:bg-red-700">
+              <Button size="sm" className="bg-ggrave-red text-white hover:bg-red-700 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50">
                 Sign Up
               </Button>
             </div>
