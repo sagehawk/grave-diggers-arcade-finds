@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import GameCard from '../components/GameCard';
-import { Fire, Star, ArrowUp } from 'lucide-react';
+import { Flame, Star, ArrowUp } from 'lucide-react';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -219,7 +219,7 @@ const Index: React.FC = () => {
       releaseDate: '2023-10-30',
     }
   ];
-
+  
   const updatedGames: Game[] = [
     {
       id: '13',
@@ -327,7 +327,7 @@ const Index: React.FC = () => {
                 value="ripe" 
                 className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
               >
-                <Fire size={16} /> Ripe
+                <Flame size={16} /> Ripe
               </TabsTrigger>
               <TabsTrigger 
                 value="new" 
