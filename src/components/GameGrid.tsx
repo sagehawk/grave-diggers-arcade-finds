@@ -7,13 +7,14 @@ interface GameGridProps {
   games: Game[];
   title: string;
   viewAllLink?: string;
+  className?: string;
 }
 
-const GameGrid: React.FC<GameGridProps> = ({ games, title, viewAllLink }) => {
+const GameGrid: React.FC<GameGridProps> = ({ games, title, viewAllLink, className = '' }) => {
   if (games.length === 0) return null;
   
   return (
-    <div className="mb-6">
+    <div className={`mb-6 ${className}`}>
       <div className="flex justify-between items-center bg-ggrave-darkgray mb-3 p-2 border-l-4 border-ggrave-red">
         <h2 className="font-pixel text-white text-xs md:text-sm">{title}</h2>
         {viewAllLink && (

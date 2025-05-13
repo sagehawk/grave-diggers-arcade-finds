@@ -3,11 +3,12 @@ import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
 import GameGrid from '../components/GameGrid';
 import CategoryFilters from '../components/CategoryFilters';
+import CommunityBuzzSection from '../components/CommunityBuzzSection';
 import { FilterState, Game } from '../types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import GameCard from '../components/GameCard'; // Added import for GameCard
+import GameCard from '../components/GameCard';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -305,7 +306,7 @@ const Index: React.FC = () => {
                 </div>
               </div>
               
-              {/* Category Filters - Moved into the hero section */}
+              {/* Category Filters - Enhanced with quick filters */}
               <div className="flex-grow">
                 <CategoryFilters filter={filter} onFilterChange={setFilter} />
               </div>
@@ -313,114 +314,78 @@ const Index: React.FC = () => {
           </div>
         </div>
         
-        {/* Game Grid Section - Full width, max 3 items per row */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Tabs 
-              defaultValue="ripe" 
-              className="w-full"
-              onValueChange={(value) => setActiveTab(value)}
-            >
-              <TabsList className="bg-[#181818] border border-gray-700">
-                <TabsTrigger 
-                  value="ripe" 
-                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
-                >
-                  🍌 Ripe
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="new" 
-                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
-                >
-                  + New
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="updated" 
-                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
-                >
-                  ↻ Updated
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        {/* Tabs section - Full width */}
+        <div className="mb-4">
+          <Tabs 
+            defaultValue="ripe" 
+            className="w-full"
+            onValueChange={(value) => setActiveTab(value)}
+          >
+            <TabsList className="bg-[#181818] border border-gray-700">
+              <TabsTrigger 
+                value="ripe" 
+                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+              >
+                🍌 Ripe
+              </TabsTrigger>
+              <TabsTrigger 
+                value="new" 
+                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+              >
+                + New
+              </TabsTrigger>
+              <TabsTrigger 
+                value="updated" 
+                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+              >
+                ↻ Updated
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        
+        {/* Two-column layout for Game Grid and Community Buzz */}
+        <div className="flex flex-col lg:flex-row gap-6 mb-8">
+          {/* Left Column - Game Grid (Wider) */}
+          <div className="lg:w-2/3">
+            <GameGrid 
+              games={getTabGames()} 
+              title={activeTab.toUpperCase()} 
+              viewAllLink={`/games/${activeTab}`}
+            />
           </div>
           
-          {/* Game Grid with larger items, max 3 per row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getTabGames().map((game) => (
-              <div key={game.id} className="flex">
-                <GameCard game={game} />
-              </div>
-            ))}
+          {/* Right Column - Community Buzz (Narrower) */}
+          <div className="lg:w-1/3">
+            <CommunityBuzzSection />
           </div>
         </div>
         
-        {/* Community Buzz Section */}
-        <div className="mt-8">
-          <div className="bg-[#181818] mb-4 p-2 border-l-4 border-ggrave-red">
-            <h2 className="font-pixel text-white text-xs md:text-sm">COMMUNITY BUZZ</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Community post items with enhanced visuals */}
-            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
-              <div className="flex items-center mb-2">
-                <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">RS</div>
-                <h3 className="text-white font-medium text-sm">Best Indie RPGs of 2023</h3>
+        {/* Footer section remains unchanged */}
+        <footer className="bg-[#181818] border-t border-gray-800 py-6 mt-8">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="mb-4 md:mb-0">
+                <img 
+                  src="https://i.imgur.com/ItKyOPt.jpeg" 
+                  alt="GamerGrave Logo" 
+                  className="h-6 mb-2"
+                />
+                <p className="text-gray-400 text-xs">
+                  © 2023 GamerGrave. All rights reserved.
+                </p>
               </div>
-              <p className="text-gray-400 text-xs mb-2">
-                Discussion thread with <span className="text-white">128</span> comments
-              </p>
-              <a href="/community/topic/123" className="text-ggrave-red text-xs hover:underline">Join Discussion</a>
-            </div>
-            
-            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
-              <div className="flex items-center mb-2">
-                <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">PA</div>
-                <h3 className="text-white font-medium text-sm">Hidden Pixel Art Gems</h3>
+              
+              <div className="flex space-x-6">
+                <a href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">About</a>
+                <a href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">Contact</a>
+                <a href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy</a>
+                <a href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">Terms</a>
               </div>
-              <p className="text-gray-400 text-xs mb-2">
-                Review compilation with <span className="text-white">95</span> submissions
-              </p>
-              <a href="/community/topic/456" className="text-ggrave-red text-xs hover:underline">Read Reviews</a>
-            </div>
-            
-            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
-              <div className="flex items-center mb-2">
-                <div className="w-8 h-8 rounded-full bg-gray-700 mr-3 flex items-center justify-center text-sm text-white">RS</div>
-                <h3 className="text-white font-medium text-sm">Indie Dev AMA: RetroStudio</h3>
-              </div>
-              <p className="text-gray-400 text-xs mb-2">
-                Live Q&A happening <span className="bg-ggrave-red px-1 py-0.5 text-[9px] rounded-sm text-white">NOW</span>
-              </p>
-              <a href="/community/topic/789" className="text-ggrave-red text-xs hover:underline">Ask Questions</a>
             </div>
           </div>
-        </div>
+        </footer>
       </main>
-      
-      <footer className="bg-[#181818] border-t border-gray-800 py-6 mt-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <img 
-                src="https://i.imgur.com/ItKyOPt.jpeg" 
-                alt="GamerGrave Logo" 
-                className="h-6 mb-2"
-              />
-              <p className="text-gray-400 text-xs">
-                © 2023 GamerGrave. All rights reserved.
-              </p>
-            </div>
-            
-            <div className="flex space-x-6">
-              <a href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">About</a>
-              <a href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">Contact</a>
-              <a href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy</a>
-              <a href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">Terms</a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
