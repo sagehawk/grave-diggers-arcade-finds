@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
 import GameGrid from '../components/GameGrid';
+import GameCard from '../components/GameCard';
 import FilterSidebar from '../components/FilterSidebar';
 import FeaturedDeveloper from '../components/FeaturedDeveloper';
 import { FilterState, Game, Developer } from '../types';

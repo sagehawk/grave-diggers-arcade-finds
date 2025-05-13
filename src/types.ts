@@ -10,7 +10,7 @@ export interface Game {
   genre: string[];
   platforms: string[];
   price: number | "Free";
-  releaseStatus: "Released" | "Early Access" | "Demo Available" | "In Development" | "Concept";
+  releaseStatus: "Released" | "Early Access" | "Demo Available" | "In Development" | "Concept" | "Updated";
   views: number;
   likes: number;
   comments: number;
