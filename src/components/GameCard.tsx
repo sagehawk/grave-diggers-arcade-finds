@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Game } from '../types';
-import { Heart, MessageSquare, Eye, Monitor, Apple, Gamepad, Box } from 'lucide-react';
+import { Heart, MessageSquare, Eye } from 'lucide-react';
 
 interface GameCardProps {
   game: Game;
@@ -33,17 +33,21 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
   // Get relative time with color
   const relativeTime = getRelativeTime(game.releaseDate);
 
-  // Map platform to icon
-  const getPlatformIcon = (platform: string) => {
+  // Map platform to abbreviations
+  const getPlatformAbbreviation = (platform: string) => {
     switch (platform.toLowerCase()) {
-      case 'windows': return <Monitor size={14} className="text-gray-300" />;
-      case 'mac': return <Apple size={14} className="text-gray-300" />;
-      case 'linux': return <Box size={14} className="text-gray-300" />;
-      case 'steam': return <Gamepad size={14} className="text-gray-300" />;
-      case 'switch': return <Gamepad size={14} className="text-gray-300" />;
-      case 'playstation': return <Gamepad size={14} className="text-gray-300" />;
-      case 'xbox': return <Gamepad size={14} className="text-gray-300" />;
-      default: return null;
+      case 'windows': return 'Win';
+      case 'mac': return 'Mac';
+      case 'linux': return 'Lin';
+      case 'steam': return 'Steam';
+      case 'switch': return 'Switch';
+      case 'playstation': return 'PS5';
+      case 'xbox': return 'Xbox';
+      case 'ios': return 'iOS';
+      case 'android': return 'Android';
+      case 'browser': return 'Web';
+      case 'mobile': return 'Mobile';
+      default: return platform;
     }
   };
 
@@ -66,29 +70,34 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
         
         {/* Game information */}
         <div className="py-2">
-          {/* Title and platform icons */}
+          {/* Title */}
           <div className="flex justify-between items-start">
             <h3 className="text-sm font-medium text-white truncate pr-2">{game.title}</h3>
-            <div className="flex gap-1">
+          </div>
+          
+          {/* Status tag and platform tags */}
+          <div className="flex justify-between items-center mt-1">
+            {game.releaseStatus && (
+              <span className="text-xs bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded-sm">
+                {game.releaseStatus}
+              </span>
+            )}
+            
+            {/* Platform tags */}
+            <div className="flex flex-wrap gap-1 justify-end">
               {game.platforms.slice(0, 3).map((platform, index) => (
-                <div key={index} className="flex items-center">
-                  {getPlatformIcon(platform)}
-                </div>
+                <span 
+                  key={index}
+                  className="text-xs bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded-sm"
+                >
+                  {getPlatformAbbreviation(platform)}
+                </span>
               ))}
               {game.platforms.length > 3 && (
                 <span className="text-xs text-gray-400">+{game.platforms.length - 3}</span>
               )}
             </div>
           </div>
-          
-          {/* Status tag */}
-          {game.releaseStatus && (
-            <div className="mt-1">
-              <span className="text-xs bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded-sm">
-                {game.releaseStatus}
-              </span>
-            </div>
-          )}
           
           {/* Relative time and stats */}
           <div className="flex justify-between items-center mt-2">

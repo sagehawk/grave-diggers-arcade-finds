@@ -1,11 +1,41 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, User, XIcon, Upload } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, User, XIcon, Upload, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useAuth } from '../context/AuthContext';
+import AuthModal from './AuthModal';
+import { useToast } from "@/components/ui/use-toast";
 
 const Navbar: React.FC = () => {
   const [searchFocused, setSearchFocused] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalView, setAuthModalView] = useState<'login' | 'register'>('login');
+  const { user, isAuthenticated, logout } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+  };
+
+  const handleUnearthClick = () => {
+    if (isAuthenticated) {
+      navigate('/submit-game');
+    } else {
+      toast({
+        title: "Authentication Required",
+        description: "You need to be logged in to submit a game.",
+        variant: "destructive"
+      });
+      setAuthModalView('login');
+      setAuthModalOpen(true);
+    }
+  };
 
   return (
     <nav className="bg-ggrave-black border-b border-ggrave-darkgray sticky top-0 z-50">
@@ -44,31 +74,73 @@ const Navbar: React.FC = () => {
             <Button 
               size="sm" 
               className="bg-ggrave-red text-white hover:bg-red-700 hidden sm:flex items-center"
+              onClick={handleUnearthClick}
             >
               <Upload size={16} className="mr-1.5" /> Unearth New Game
             </Button>
             
-            {/* Login/Sign Up */}
-            <div className="hidden sm:block">
-              <Button variant="outline" size="sm" className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red mr-2 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50">
-                Log In
-              </Button>
-              <Button size="sm" className="bg-ggrave-red text-white hover:bg-red-700 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50">
-                Sign Up
-              </Button>
-            </div>
+            {/* Authentication Controls */}
+            {isAuthenticated ? (
+              <div className="hidden sm:flex items-center space-x-2">
+                <Link to="/profile">
+                  <Button variant="outline" size="sm" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray flex items-center gap-2">
+                    <User size={14} /> {user?.username || 'Profile'}
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={14} />
+                </Button>
+              </div>
+            ) : (
+              <div className="hidden sm:block">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red mr-2 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
+                  onClick={() => {
+                    setAuthModalView('login');
+                    setAuthModalOpen(true);
+                  }}
+                >
+                  Log In
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-ggrave-red text-white hover:bg-red-700 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
+                  onClick={() => {
+                    setAuthModalView('register');
+                    setAuthModalOpen(true);
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
             
             {/* Mobile "Unearth" Button */}
             <Button 
               variant="default" 
               size="icon" 
               className="sm:hidden bg-ggrave-red text-white hover:bg-red-700"
+              onClick={handleUnearthClick}
             >
               <Upload size={18} />
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={authModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+        defaultView={authModalView}
+      />
     </nav>
   );
 };
