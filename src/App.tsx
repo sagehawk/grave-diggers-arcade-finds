@@ -9,7 +9,7 @@ import { Toaster } from './components/ui/toaster';
 const App = () => {
   return (
     <Router>
-      <div className="max-w-[1360px] mx-auto">
+      <div className="max-w-[1440px] mx-auto">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/games/:id" element={<GameDetail />} />

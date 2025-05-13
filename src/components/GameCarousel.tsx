@@ -13,6 +13,9 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeFrame, setTimeFrame] = useState<'today' | 'week' | 'month' | 'allTime'>('today');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [thumbnailStart, setThumbnailStart] = useState(0);
+  
+  const MAX_THUMBNAILS = 4;
   
   // Function to reset and start the timer
   const resetTimer = () => {
@@ -49,6 +52,15 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
     resetTimer(); // Reset timer on manual navigation
+  };
+  
+  // Thumbnail navigation
+  const scrollThumbnailsLeft = () => {
+    setThumbnailStart(prev => Math.max(0, prev - 1));
+  };
+  
+  const scrollThumbnailsRight = () => {
+    setThumbnailStart(prev => Math.min(Math.max(0, games.length - MAX_THUMBNAILS), prev + 1));
   };
   
   if (games.length === 0) return null;
@@ -133,23 +145,52 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
         </button>
       </div>
       
-      {/* Thumbnail navigation - removed gaps and margins */}
-      <div className="flex overflow-x-auto bg-ggrave-darkgray">
-        {games.map((game, index) => (
-          <button
-            key={game.id}
-            onClick={() => goToSlide(index)}
-            className={`flex-shrink-0 w-24 h-16 relative ${
-              index === currentIndex ? 'border-2 border-ggrave-red' : 'border-0'
-            }`}
+      {/* Thumbnail navigation - Enhanced version */}
+      <div className="flex bg-ggrave-darkgray relative">
+        {/* Thumbnail scroll arrows */}
+        {thumbnailStart > 0 && (
+          <button 
+            onClick={scrollThumbnailsLeft}
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/70 text-white p-1 z-10"
           >
-            <img 
-              src={game.thumbnail}
-              alt={game.title}
-              className="w-full h-full object-cover"
-            />
+            <ChevronLeft size={18} />
           </button>
-        ))}
+        )}
+        
+        {thumbnailStart + MAX_THUMBNAILS < games.length && (
+          <button 
+            onClick={scrollThumbnailsRight}
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/70 text-white p-1 z-10"
+          >
+            <ChevronRight size={18} />
+          </button>
+        )}
+        
+        {/* Thumbnails */}
+        <div className="flex flex-grow overflow-hidden">
+          {games.slice(thumbnailStart, thumbnailStart + MAX_THUMBNAILS).map((game, idx) => {
+            const actualIndex = thumbnailStart + idx;
+            const isActive = actualIndex === currentIndex;
+            
+            return (
+              <button
+                key={game.id}
+                onClick={() => goToSlide(actualIndex)}
+                className={`flex-1 h-20 relative transition-all ${isActive ? '' : 'hover:opacity-100'}`}
+              >
+                <img 
+                  src={game.thumbnail}
+                  alt={game.title}
+                  className="w-full h-full object-cover"
+                />
+                {/* Dark overlay for inactive thumbnails */}
+                {!isActive && (
+                  <div className="absolute inset-0 bg-black/60 hover:bg-black/30 transition-colors"></div>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
