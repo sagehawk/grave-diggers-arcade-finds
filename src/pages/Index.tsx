@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import GameCard from '../components/GameCard';
 import { Flame, Star, ArrowUp, Filter, X } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -360,11 +360,11 @@ const Index: React.FC = () => {
               <SheetContent side="right" className="w-[85vw] sm:w-[350px] p-0 bg-ggrave-black border-gray-800">
                 <div className="p-4 flex justify-between items-center border-b border-gray-800">
                   <h3 className="font-pixel text-white text-sm">Filters</h3>
-                  <Sheet.Close asChild>
+                  <SheetClose asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <X className="h-4 w-4" />
                     </Button>
-                  </Sheet.Close>
+                  </SheetClose>
                 </div>
                 <div className="p-4">
                   <FilterSidebar filter={filter} onFilterChange={setFilter} />
