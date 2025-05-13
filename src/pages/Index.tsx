@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import GameCard from '../components/GameCard';
+import { Fire, Star, ArrowUp } from 'lucide-react';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -324,21 +325,21 @@ const Index: React.FC = () => {
             <TabsList className="bg-[#181818] border border-gray-700">
               <TabsTrigger 
                 value="ripe" 
-                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
               >
-                🍌 Ripe
+                <Fire size={16} /> Ripe
               </TabsTrigger>
               <TabsTrigger 
                 value="new" 
-                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
               >
-                + New
+                <Star size={16} /> New
               </TabsTrigger>
               <TabsTrigger 
                 value="updated" 
-                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1"
               >
-                ↻ Updated
+                <ArrowUp size={16} /> Updated
               </TabsTrigger>
             </TabsList>
           </Tabs>
