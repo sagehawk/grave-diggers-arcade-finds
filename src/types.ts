@@ -15,6 +15,38 @@ export interface Game {
   likes: number;
   comments: number;
   releaseDate: string;
+  mediaGallery?: string[];
+  videoUrl?: string;
+  updates?: GameUpdate[];
+  downloadFiles?: GameFile[];
+}
+
+export interface GameUpdate {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+}
+
+export interface GameFile {
+  id: string;
+  name: string;
+  size: string;
+  version?: string;
+  lastUpdated?: string;
+  downloadCount?: number;
+  url: string;
+}
+
+export interface GameComment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  text: string;
+  timestamp: string;
+  likes: number;
+  replies?: GameComment[];
 }
 
 // Developer data structure

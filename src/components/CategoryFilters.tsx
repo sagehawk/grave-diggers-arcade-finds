@@ -6,7 +6,7 @@ import {
   Compass, // Adventure
   Sword, // RPG
   Grid3X3, // Strategy
-  PuzzlePiece, // Puzzle
+  Puzzle, // Puzzle - replacing PuzzlePiece which doesn't exist
   Monitor, // Simulation
   Gamepad, // Platformer
   Target, // Shooter
@@ -17,7 +17,6 @@ import {
   Coffee, // Casual
   Stars, // Other
 } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 
 interface CategoryFiltersProps {
@@ -32,7 +31,7 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({ filter, onFilterChang
     { genre: "Adventure", icon: Compass, label: "Adventure" },
     { genre: "RPG", icon: Sword, label: "RPG" },
     { genre: "Strategy", icon: Grid3X3, label: "Strategy" },
-    { genre: "Puzzle", icon: PuzzlePiece, label: "Puzzle" },
+    { genre: "Puzzle", icon: Puzzle, label: "Puzzle" },
     { genre: "Simulation", icon: Monitor, label: "Simulation" },
     { genre: "Platformer", icon: Gamepad, label: "Platformer" },
     { genre: "Shooter", icon: Target, label: "Shooter" },
