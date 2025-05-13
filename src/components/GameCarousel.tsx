@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Game } from '../types';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Heart, Eye, MessageSquare } from 'lucide-react';
@@ -12,26 +12,43 @@ interface GameCarouselProps {
 const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeFrame, setTimeFrame] = useState<'today' | 'week' | 'month' | 'allTime'>('today');
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Auto-advance the carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
+  // Function to reset and start the timer
+  const resetTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    timerRef.current = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % games.length);
     }, 5000);
+  };
+  
+  // Start timer on component mount
+  useEffect(() => {
+    resetTimer();
     
-    return () => clearInterval(interval);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
   }, [games.length]);
   
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => (prevIndex === 0 ? games.length - 1 : prevIndex - 1));
+    resetTimer(); // Reset timer on manual navigation
   };
   
   const goToNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % games.length);
+    resetTimer(); // Reset timer on manual navigation
   };
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
+    resetTimer(); // Reset timer on manual navigation
   };
   
   if (games.length === 0) return null;
@@ -101,7 +118,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
           </div>
         </Link>
         
-        {/* Navigation arrows */}
+        {/* Navigation arrows - improved positioning and z-index */}
         <button
           className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
           onClick={(e) => { e.preventDefault(); goToPrevious(); }}
@@ -116,14 +133,14 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
         </button>
       </div>
       
-      {/* Thumbnail navigation */}
-      <div className="flex overflow-x-auto gap-2 py-2 mt-1 bg-ggrave-darkgray">
+      {/* Thumbnail navigation - removed gaps and margins */}
+      <div className="flex overflow-x-auto bg-ggrave-darkgray">
         {games.map((game, index) => (
           <button
             key={game.id}
             onClick={() => goToSlide(index)}
             className={`flex-shrink-0 w-24 h-16 relative ${
-              index === currentIndex ? 'border-2 border-ggrave-red' : 'border border-gray-700'
+              index === currentIndex ? 'border-2 border-ggrave-red' : 'border-0'
             }`}
           >
             <img 

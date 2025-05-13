@@ -1,13 +1,16 @@
+
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
 import GameGrid from '../components/GameGrid';
 import GameCard from '../components/GameCard';
 import FilterSidebar from '../components/FilterSidebar';
+import HeroFilter from '../components/HeroFilter';
 import FeaturedDeveloper from '../components/FeaturedDeveloper';
 import { FilterState, Game, Developer } from '../types';
 import { Gamepad, Archive, Flame, Trophy, Link, Clock } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -262,34 +265,41 @@ const Index: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-ggrave-black">
+    <div className="min-h-screen bg-[#111111]">
       <Navbar />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Hero Section with Gallery and Text */}
+        {/* Hero Section with Gallery and Text/Filters */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           {/* Gallery taking 2/3 of the screen */}
           <div className="md:w-2/3">
             <GameCarousel games={featuredGames} title="FEATURED GAMES" />
           </div>
           
-          {/* Text on the right */}
-          <div className="md:w-1/3 flex flex-col justify-center">
-            <h1 className="font-pixel text-white text-2xl md:text-4xl mb-4 animate-flicker">
-              Game Over? <br />
-              <span className="text-ggrave-red">Dig Up Your Next Adventure.</span>
-            </h1>
-            
-            {/* Discord Link */}
-            <div className="mt-4">
-              <p className="text-white font-pixel mb-2">Discord:</p>
-              <a 
-                href="#" 
-                className="inline-block bg-[#5865F2] text-white px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
-              >
-                Join our server
-              </a>
+          {/* Right side with text and filters */}
+          <div className="md:w-1/3 flex flex-col gap-4">
+            <div>
+              <h1 className="font-pixel text-white text-xl md:text-2xl mb-3 animate-flicker">
+                Game Over? <br />
+                <span className="text-ggrave-red">Dig Up Your Next Adventure.</span>
+              </h1>
+              
+              {/* Discord Link with updated button */}
+              <div className="mb-4">
+                <p className="text-white font-pixel mb-2">Discord:</p>
+                <a 
+                  href="https://discord.gg/ASJyTrZ" 
+                  className="inline-block bg-ggrave-red text-white px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Join our server
+                </a>
+              </div>
             </div>
+            
+            {/* Integrated filters */}
+            <HeroFilter filter={filter} onFilterChange={setFilter} />
           </div>
         </div>
         
@@ -301,7 +311,7 @@ const Index: React.FC = () => {
               className="w-full"
               onValueChange={(value) => setActiveTab(value)}
             >
-              <TabsList className="bg-ggrave-darkgray border border-gray-700">
+              <TabsList className="bg-[#181818] border border-gray-700">
                 <TabsTrigger 
                   value="ripe" 
                   className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
@@ -323,7 +333,7 @@ const Index: React.FC = () => {
               </TabsList>
             </Tabs>
             
-            <button className="bg-ggrave-darkgray text-white px-3 py-1 text-xs rounded-sm ml-2 hover:bg-gray-700">
+            <button className="bg-[#181818] text-white px-3 py-1 text-xs rounded-sm ml-2 hover:bg-gray-700 transition-colors">
               Advanced Filters
             </button>
           </div>
@@ -335,34 +345,43 @@ const Index: React.FC = () => {
           </div>
         </div>
         
-        {/* Community Buzz Section - Simplified */}
+        {/* Community Buzz Section - Enhanced */}
         <div className="mt-8">
-          <div className="bg-ggrave-darkgray mb-4 p-2 border-l-4 border-ggrave-red">
+          <div className="bg-[#181818] mb-4 p-2 border-l-4 border-ggrave-red">
             <h2 className="font-pixel text-white text-xs md:text-sm">COMMUNITY BUZZ</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Community post items would go here */}
-            <div className="bg-ggrave-darkgray border border-gray-800 p-3 rounded-sm">
-              <h3 className="text-white font-medium text-sm mb-1">Best Indie RPGs of 2023</h3>
+            {/* Community post items with enhanced visuals */}
+            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
+              <div className="flex items-center mb-2">
+                <div className="w-6 h-6 rounded-full bg-gray-700 mr-2 flex items-center justify-center text-xs text-white">RS</div>
+                <h3 className="text-white font-medium text-sm">Best Indie RPGs of 2023</h3>
+              </div>
               <p className="text-gray-400 text-xs mb-2">
-                Discussion thread with 128 comments
+                Discussion thread with <span className="text-white">128</span> comments
               </p>
               <a href="/community/topic/123" className="text-ggrave-red text-xs hover:underline">Join Discussion</a>
             </div>
             
-            <div className="bg-ggrave-darkgray border border-gray-800 p-3 rounded-sm">
-              <h3 className="text-white font-medium text-sm mb-1">Hidden Pixel Art Gems</h3>
+            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
+              <div className="flex items-center mb-2">
+                <div className="w-6 h-6 rounded-full bg-gray-700 mr-2 flex items-center justify-center text-xs text-white">PA</div>
+                <h3 className="text-white font-medium text-sm">Hidden Pixel Art Gems</h3>
+              </div>
               <p className="text-gray-400 text-xs mb-2">
-                Review compilation with 95 submissions
+                Review compilation with <span className="text-white">95</span> submissions
               </p>
               <a href="/community/topic/456" className="text-ggrave-red text-xs hover:underline">Read Reviews</a>
             </div>
             
-            <div className="bg-ggrave-darkgray border border-gray-800 p-3 rounded-sm">
-              <h3 className="text-white font-medium text-sm mb-1">Indie Dev AMA: RetroStudio</h3>
+            <div className="bg-[#181818] border border-gray-800 p-3 rounded-sm hover:border-gray-600 transition-all duration-300">
+              <div className="flex items-center mb-2">
+                <div className="w-6 h-6 rounded-full bg-gray-700 mr-2 flex items-center justify-center text-xs text-white">RS</div>
+                <h3 className="text-white font-medium text-sm">Indie Dev AMA: RetroStudio</h3>
+              </div>
               <p className="text-gray-400 text-xs mb-2">
-                Live Q&A happening now
+                Live Q&A happening <span className="bg-ggrave-red px-1 py-0.5 text-[9px] rounded-sm text-white">NOW</span>
               </p>
               <a href="/community/topic/789" className="text-ggrave-red text-xs hover:underline">Ask Questions</a>
             </div>
@@ -370,7 +389,7 @@ const Index: React.FC = () => {
         </div>
       </main>
       
-      <footer className="bg-ggrave-darkgray border-t border-gray-800 py-6 mt-8">
+      <footer className="bg-[#181818] border-t border-gray-800 py-6 mt-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
@@ -385,10 +404,10 @@ const Index: React.FC = () => {
             </div>
             
             <div className="flex space-x-6">
-              <a href="/about" className="text-gray-400 hover:text-white text-sm">About</a>
-              <a href="/contact" className="text-gray-400 hover:text-white text-sm">Contact</a>
-              <a href="/privacy" className="text-gray-400 hover:text-white text-sm">Privacy</a>
-              <a href="/terms" className="text-gray-400 hover:text-white text-sm">Terms</a>
+              <a href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">About</a>
+              <a href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">Contact</a>
+              <a href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy</a>
+              <a href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">Terms</a>
             </div>
           </div>
         </div>

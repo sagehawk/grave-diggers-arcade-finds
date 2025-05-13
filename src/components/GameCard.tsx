@@ -10,9 +10,9 @@ interface GameCardProps {
 
 const GameCard: React.FC<GameCardProps> = ({ game }) => {
   return (
-    <div className="bg-ggrave-darkgray border border-gray-800 hover:border-ggrave-red transition-all duration-300 rounded-sm overflow-hidden shadow-md">
+    <div className="bg-[#181818] border border-gray-800 hover:border-ggrave-red transition-all duration-300 rounded-sm overflow-hidden shadow-md group">
       <Link to={`/games/${game.id}`} className="block">
-        <div className="relative group">
+        <div className="relative">
           <img 
             src={game.thumbnail} 
             alt={game.title}
@@ -26,7 +26,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
         </div>
         
         <div className="p-2">
-          <h3 className="font-pixel text-xs text-white mb-1 truncate">{game.title}</h3>
+          <h3 className="font-pixel text-[13px] text-white mb-1 truncate">{game.title}</h3>
           
           <div className="flex justify-between items-center text-[10px] text-gray-400 mt-1">
             <div className="flex items-center gap-1">
@@ -42,7 +42,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
       </Link>
       
       <div className="bg-black bg-opacity-50 text-[10px] border-t border-gray-800 p-1.5 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 opacity-70 group-hover:opacity-100 transition-opacity">
           <div className="flex items-center">
             <Heart size={10} className="text-ggrave-red mr-0.5" />
             <span className="text-gray-400">{game.likes}</span>
