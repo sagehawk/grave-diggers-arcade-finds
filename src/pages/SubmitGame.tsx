@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { 
@@ -20,6 +20,9 @@ import { useToast } from '@/components/ui/use-toast';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { Genre, Platform } from '../types';
+import { validateFileSize, optimizeImage, optimizeMultipleImages } from '../utils/imageOptimization';
+import { Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface GameSubmissionForm {
   title: string;
@@ -50,7 +53,7 @@ const availablePlatforms: Platform[] = [
 ];
 
 const SubmitGame: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const form = useForm<GameSubmissionForm>({
@@ -70,6 +73,12 @@ const SubmitGame: React.FC = () => {
       developerLink: '',
     },
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileErrors, setFileErrors] = useState<{ 
+    thumbnail?: string; 
+    galleryImages?: string[] 
+  }>({});
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -83,18 +92,170 @@ const SubmitGame: React.FC = () => {
     }
   }, [isAuthenticated, navigate, toast]);
 
-  const onSubmit = (data: GameSubmissionForm) => {
-    // Handle form submission - this would typically call an API
-    console.log('Submitting game:', data);
+  // Handle file validation and preview
+  const validateAndPreviewFile = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    fieldName: 'thumbnail' | 'galleryImages'
+  ) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     
-    // Show success toast
-    toast({
-      title: "Game Submitted Successfully!",
-      description: "Your game has been submitted for review. You'll be notified once it's approved.",
-    });
+    // For thumbnails (single file)
+    if (fieldName === 'thumbnail') {
+      const file = files[0];
+      if (!validateFileSize(file)) {
+        setFileErrors(prev => ({
+          ...prev,
+          thumbnail: `File ${file.name} exceeds the 5MB limit`
+        }));
+        e.target.value = '';
+        return;
+      }
+      setFileErrors(prev => ({ ...prev, thumbnail: undefined }));
+      form.setValue('thumbnail', files);
+    } 
+    // For gallery (multiple files)
+    else {
+      const errors: string[] = [];
+      
+      Array.from(files).forEach(file => {
+        if (!validateFileSize(file)) {
+          errors.push(`File ${file.name} exceeds the 5MB limit`);
+        }
+      });
+      
+      if (errors.length > 0) {
+        setFileErrors(prev => ({ ...prev, galleryImages: errors }));
+        e.target.value = '';
+        return;
+      }
+      
+      setFileErrors(prev => ({ ...prev, galleryImages: undefined }));
+      form.setValue('galleryImages', files);
+    }
+  };
+
+  const onSubmit = async (data: GameSubmissionForm) => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication Error",
+        description: "Please sign in again to submit your game.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Redirect to home page
-    navigate('/');
+    setIsSubmitting(true);
+    
+    try {
+      toast({
+        title: "Processing Images",
+        description: "Optimizing images for upload. Please wait...",
+      });
+      
+      // Process thumbnail
+      let thumbnailUrl = '';
+      if (data.thumbnail && data.thumbnail.length > 0) {
+        const optimizedThumbnail = await optimizeImage(data.thumbnail[0], true);
+        const thumbnailPath = `game-thumbnails/${user.id}/${Date.now()}-${optimizedThumbnail.name}`;
+        
+        // Upload to Supabase Storage
+        const { data: thumbnailData, error: thumbnailError } = await supabase.storage
+          .from('games')
+          .upload(thumbnailPath, optimizedThumbnail);
+          
+        if (thumbnailError) throw new Error(`Thumbnail upload failed: ${thumbnailError.message}`);
+        
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('games')
+          .getPublicUrl(thumbnailPath);
+          
+        thumbnailUrl = publicUrlData.publicUrl;
+      }
+      
+      // Process gallery images
+      let galleryUrls: string[] = [];
+      if (data.galleryImages && data.galleryImages.length > 0) {
+        const optimizedGalleryImages = await optimizeMultipleImages(data.galleryImages, false);
+        
+        // Upload each gallery image
+        const uploadPromises = optimizedGalleryImages.map(async (file, index) => {
+          const galleryPath = `game-galleries/${user.id}/${Date.now()}-${index}-${file.name}`;
+          
+          const { data: galleryData, error: galleryError } = await supabase.storage
+            .from('games')
+            .upload(galleryPath, file);
+            
+          if (galleryError) throw new Error(`Gallery image upload failed: ${galleryError.message}`);
+          
+          const { data: publicUrlData } = supabase.storage
+            .from('games')
+            .getPublicUrl(galleryPath);
+            
+          return publicUrlData.publicUrl;
+        });
+        
+        galleryUrls = await Promise.all(uploadPromises);
+      }
+      
+      // Parse custom tags
+      const customTags = data.customTags ? 
+        data.customTags.split(',').map(tag => tag.trim()) : 
+        [];
+      
+      // Prepare game data for database
+      const gameData = {
+        title: data.title,
+        tagline: data.tagline || null,
+        description: data.description,
+        thumbnail: thumbnailUrl,
+        genre: data.genres,
+        platforms: data.platforms,
+        price: data.price,
+        releaseStatus: data.status,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        releaseDate: new Date().toISOString(),
+        mediaGallery: galleryUrls.length > 0 ? galleryUrls : null,
+        videoUrl: data.trailerUrl || null,
+        customTags: customTags.length > 0 ? customTags : null,
+        submitter_user_id: user.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'pending',
+        storeLink: data.storeLink || null,
+        developerLink: data.developerLink || null
+      };
+      
+      // Insert game data into Supabase
+      const { data: insertedGame, error: insertError } = await supabase
+        .from('games')
+        .insert(gameData)
+        .select();
+        
+      if (insertError) throw new Error(`Failed to save game data: ${insertError.message}`);
+      
+      // Show success toast
+      toast({
+        title: "Game Submitted Successfully!",
+        description: "Your game has been submitted for review. You'll be notified once it's approved.",
+      });
+      
+      // Redirect to home page
+      navigate('/');
+      
+    } catch (error) {
+      console.error('Error submitting game:', error);
+      toast({
+        title: "Submission Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isAuthenticated) return null;
@@ -190,14 +351,17 @@ const SubmitGame: React.FC = () => {
                       <Input 
                         type="file" 
                         className="bg-gray-800 border-gray-700 text-white"
-                        accept="image/*"
-                        onChange={(e) => onChange(e.target.files)}
+                        accept="image/jpeg,image/png,image/webp" 
+                        onChange={(e) => validateAndPreviewFile(e, 'thumbnail')}
                         {...fieldProps} 
                       />
                     </FormControl>
                     <FormDescription className="text-gray-400">
-                      Upload a main cover image for your game (recommended: 1280x720px).
+                      Upload a main cover image for your game (recommended: 1280x720px). JPG format preferred. Max size: 5MB.
                     </FormDescription>
+                    {fileErrors.thumbnail && (
+                      <p className="text-sm font-medium text-destructive mt-1">{fileErrors.thumbnail}</p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -214,15 +378,18 @@ const SubmitGame: React.FC = () => {
                       <Input 
                         type="file" 
                         className="bg-gray-800 border-gray-700 text-white"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp" 
                         multiple
-                        onChange={(e) => onChange(e.target.files)}
+                        onChange={(e) => validateAndPreviewFile(e, 'galleryImages')}
                         {...fieldProps} 
                       />
                     </FormControl>
                     <FormDescription className="text-gray-400">
-                      Upload up to 5 additional screenshots or artwork (optional).
+                      Upload up to 5 additional screenshots or artwork. JPG format preferred. Max size: 5MB per image.
                     </FormDescription>
+                    {fileErrors.galleryImages && fileErrors.galleryImages.map((error, i) => (
+                      <p key={i} className="text-sm font-medium text-destructive mt-1">{error}</p>
+                    ))}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -243,7 +410,7 @@ const SubmitGame: React.FC = () => {
                       />
                     </FormControl>
                     <FormDescription className="text-gray-400">
-                      YouTube or Vimeo link to your game trailer (optional).
+                      YouTube or Vimeo link to your game trailer (preferred over uploading video files).
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -480,14 +647,23 @@ const SubmitGame: React.FC = () => {
                   variant="outline"
                   className="border-gray-700 text-white hover:bg-gray-800"
                   onClick={() => navigate('/')}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   className="bg-ggrave-red hover:bg-red-700"
+                  disabled={isSubmitting}
                 >
-                  Submit for Review
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Submit for Review'
+                  )}
                 </Button>
               </div>
             </form>
