@@ -1,15 +1,8 @@
 
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '../types/database.types'
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '../types/database.types';
 
-// Get environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY as string;
-
-// Verify the key is available
-if (!supabaseKey) {
-  console.error("Supabase key is not defined. Ensure VITE_SUPABASE_KEY environment variable is set correctly.");
-  throw new Error("Supabase key is not defined. Ensure VITE_SUPABASE_KEY environment variable is set correctly.");
-}
+const supabaseUrl = 'https://xliqdqaerqaezbngpzdd.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsaXFkcWFlcnFhZXpibnBwemRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxNTc3MjAsImV4cCI6MjA2MjczMzcyMH0.1I02V2oeB-kn4p-YzFHjzTsYJaU3ul_eEP3Phzb1F9I';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey);

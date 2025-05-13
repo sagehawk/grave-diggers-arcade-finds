@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { 
   Form, 
@@ -54,12 +55,7 @@ const availablePlatforms: Platform[] = [
 const SubmitGame: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-  const queryParams = new URLSearchParams(location.search);
-  const editGameId = queryParams.get('edit');
-  const [isEditMode, setIsEditMode] = useState(false);
-  
   const form = useForm<GameSubmissionForm>({
     defaultValues: {
       title: '',
@@ -79,90 +75,13 @@ const SubmitGame: React.FC = () => {
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(editGameId ? true : false);
-  const [currentThumbnailUrl, setCurrentThumbnailUrl] = useState<string | null>(null);
-  const [currentGalleryUrls, setCurrentGalleryUrls] = useState<string[]>([]);
   const [fileErrors, setFileErrors] = useState<{ 
     thumbnail?: string; 
     galleryImages?: string[] 
   }>({});
 
-  // Fetch game data if in edit mode
-  useEffect(() => {
-    const fetchGameData = async () => {
-      if (!editGameId || !user) return;
-      
-      setIsLoading(true);
-      setIsEditMode(true);
-      
-      try {
-        const { data, error } = await supabase
-          .from('games')
-          .select('*')
-          .eq('id', editGameId)
-          .single();
-          
-        if (error) throw error;
-        
-        if (!data) {
-          toast({
-            title: "Game not found",
-            description: "The game you're trying to edit could not be found.",
-            variant: "destructive",
-          });
-          navigate('/account/me');
-          return;
-        }
-        
-        // Verify the user is the owner of this game
-        if (data.submitter_user_id !== user.id) {
-          toast({
-            title: "Access denied",
-            description: "You don't have permission to edit this game.",
-            variant: "destructive",
-          });
-          navigate('/account/me');
-          return;
-        }
-        
-        // Set form values from data
-        form.setValue('title', data.title);
-        form.setValue('tagline', data.tagline || '');
-        form.setValue('description', data.description);
-        form.setValue('trailerUrl', data.videoUrl || '');
-        form.setValue('genres', data.genre || []);
-        form.setValue('customTags', (data.customTags || []).join(', '));
-        form.setValue('status', data.releaseStatus);
-        form.setValue('platforms', data.platforms || []);
-        form.setValue('price', data.price?.toString() || '');
-        form.setValue('storeLink', data.storeLink || '');
-        form.setValue('developerLink', data.developerLink || '');
-        
-        // Set existing image URLs
-        if (data.thumbnail) {
-          setCurrentThumbnailUrl(data.thumbnail);
-        }
-        
-        if (data.mediaGallery && Array.isArray(data.mediaGallery)) {
-          setCurrentGalleryUrls(data.mediaGallery);
-        }
-      } catch (error) {
-        console.error('Error fetching game data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load game data for editing.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchGameData();
-  }, [editGameId, user, navigate, toast, form]);
-
   // Redirect if not authenticated
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isAuthenticated) {
       navigate('/');
       toast({
@@ -235,7 +154,7 @@ const SubmitGame: React.FC = () => {
       });
       
       // Process thumbnail
-      let thumbnailUrl = currentThumbnailUrl || '';
+      let thumbnailUrl = '';
       if (data.thumbnail && data.thumbnail.length > 0) {
         const optimizedThumbnail = await optimizeImage(data.thumbnail[0], true);
         const thumbnailPath = `game-thumbnails/${user.id}/${Date.now()}-${optimizedThumbnail.name}`;
@@ -256,7 +175,7 @@ const SubmitGame: React.FC = () => {
       }
       
       // Process gallery images
-      let galleryUrls = [...currentGalleryUrls];
+      let galleryUrls: string[] = [];
       if (data.galleryImages && data.galleryImages.length > 0) {
         const optimizedGalleryImages = await optimizeMultipleImages(data.galleryImages, false);
         
@@ -277,8 +196,7 @@ const SubmitGame: React.FC = () => {
           return publicUrlData.publicUrl;
         });
         
-        const newGalleryUrls = await Promise.all(uploadPromises);
-        galleryUrls = [...galleryUrls, ...newGalleryUrls];
+        galleryUrls = await Promise.all(uploadPromises);
       }
       
       // Parse custom tags
@@ -296,57 +214,37 @@ const SubmitGame: React.FC = () => {
         platforms: data.platforms,
         price: data.price,
         releaseStatus: data.status,
-        videoUrl: data.trailerUrl || null,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        releaseDate: new Date().toISOString(),
         mediaGallery: galleryUrls.length > 0 ? galleryUrls : null,
+        videoUrl: data.trailerUrl || null,
         customTags: customTags.length > 0 ? customTags : null,
         submitter_user_id: user.id,
+        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        status: 'pending',
         storeLink: data.storeLink || null,
         developerLink: data.developerLink || null
       };
       
-      if (isEditMode && editGameId) {
-        // Update existing game
-        const { error: updateError } = await supabase
-          .from('games')
-          .update({
-            ...gameData,
-            // If game was previously published and is being edited, set it back to pending
-            status: 'pending'
-          })
-          .eq('id', editGameId);
-          
-        if (updateError) throw new Error(`Failed to update game: ${updateError.message}`);
+      // Insert game data into Supabase
+      const { data: insertedGame, error: insertError } = await supabase
+        .from('games')
+        .insert(gameData)
+        .select();
         
-        toast({
-          title: "Game Updated Successfully!",
-          description: "Your game has been updated and will be reviewed again.",
-        });
-      } else {
-        // Insert new game
-        const newGameData = {
-          ...gameData,
-          createdAt: new Date().toISOString(),
-          views: 0,
-          likes: 0,
-          comments: 0,
-          status: 'pending',
-        };
-        
-        const { error: insertError } = await supabase
-          .from('games')
-          .insert(newGameData);
-          
-        if (insertError) throw new Error(`Failed to save game data: ${insertError.message}`);
-        
-        toast({
-          title: "Game Submitted Successfully!",
-          description: "Your game has been submitted for review. You'll be notified once it's approved.",
-        });
-      }
+      if (insertError) throw new Error(`Failed to save game data: ${insertError.message}`);
       
-      // Redirect to user account page
-      navigate('/account/me');
+      // Show success toast
+      toast({
+        title: "Game Submitted Successfully!",
+        description: "Your game has been submitted for review. You'll be notified once it's approved.",
+      });
+      
+      // Redirect to home page
+      navigate('/');
       
     } catch (error) {
       console.error('Error submitting game:', error);
@@ -360,20 +258,6 @@ const SubmitGame: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-ggrave-black">
-        <Navbar />
-        <div className="max-w-[1440px] mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="flex flex-col items-center">
-            <Loader2 className="h-12 w-12 animate-spin text-ggrave-red" />
-            <p className="mt-4 text-white">Loading game data...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (!isAuthenticated) return null;
 
   return (
@@ -381,9 +265,7 @@ const SubmitGame: React.FC = () => {
       <Navbar />
       
       <div className="max-w-[1440px] mx-auto px-4 py-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 font-pixel">
-          {isEditMode ? 'Edit Game' : 'Unearth New Game'}
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 font-pixel">Unearth New Game</h1>
         
         <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <Form {...form}>
@@ -461,20 +343,10 @@ const SubmitGame: React.FC = () => {
               <FormField
                 control={form.control}
                 name="thumbnail"
-                rules={{ required: isEditMode && currentThumbnailUrl ? false : "Game thumbnail is required" }}
+                rules={{ required: "Game thumbnail is required" }}
                 render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
                     <FormLabel className="text-white">Main Thumbnail</FormLabel>
-                    
-                    {isEditMode && currentThumbnailUrl && (
-                      <div className="mb-2">
-                        <p className="text-sm text-gray-400 mb-2">Current thumbnail:</p>
-                        <div className="w-40 h-24 overflow-hidden rounded">
-                          <img src={currentThumbnailUrl} alt="Current thumbnail" className="w-full h-full object-cover" />
-                        </div>
-                      </div>
-                    )}
-                    
                     <FormControl>
                       <Input 
                         type="file" 
@@ -485,9 +357,7 @@ const SubmitGame: React.FC = () => {
                       />
                     </FormControl>
                     <FormDescription className="text-gray-400">
-                      {isEditMode 
-                        ? "Upload a new thumbnail image if you want to change it. JPG format preferred. Max size: 5MB."
-                        : "Upload a main cover image for your game (recommended: 1280x720px). JPG format preferred. Max size: 5MB."}
+                      Upload a main cover image for your game (recommended: 1280x720px). JPG format preferred. Max size: 5MB.
                     </FormDescription>
                     {fileErrors.thumbnail && (
                       <p className="text-sm font-medium text-destructive mt-1">{fileErrors.thumbnail}</p>
@@ -504,20 +374,6 @@ const SubmitGame: React.FC = () => {
                 render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
                     <FormLabel className="text-white">Gallery Images</FormLabel>
-                    
-                    {isEditMode && currentGalleryUrls.length > 0 && (
-                      <div className="mb-2">
-                        <p className="text-sm text-gray-400 mb-2">Current gallery images:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {currentGalleryUrls.map((url, index) => (
-                            <div key={index} className="w-32 h-20 overflow-hidden rounded">
-                              <img src={url} alt={`Gallery image ${index + 1}`} className="w-full h-full object-cover" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
                     <FormControl>
                       <Input 
                         type="file" 
@@ -529,9 +385,7 @@ const SubmitGame: React.FC = () => {
                       />
                     </FormControl>
                     <FormDescription className="text-gray-400">
-                      {isEditMode
-                        ? "Upload additional gallery images to add to your existing ones. JPG format preferred. Max size: 5MB per image."
-                        : "Upload up to 5 additional screenshots or artwork. JPG format preferred. Max size: 5MB per image."}
+                      Upload up to 5 additional screenshots or artwork. JPG format preferred. Max size: 5MB per image.
                     </FormDescription>
                     {fileErrors.galleryImages && fileErrors.galleryImages.map((error, i) => (
                       <p key={i} className="text-sm font-medium text-destructive mt-1">{error}</p>
@@ -647,7 +501,6 @@ const SubmitGame: React.FC = () => {
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
-                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -793,7 +646,7 @@ const SubmitGame: React.FC = () => {
                   type="button"
                   variant="outline"
                   className="border-gray-700 text-white hover:bg-gray-800"
-                  onClick={() => navigate('/account/me')}
+                  onClick={() => navigate('/')}
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -809,7 +662,7 @@ const SubmitGame: React.FC = () => {
                       Processing...
                     </>
                   ) : (
-                    isEditMode ? 'Update Game' : 'Submit for Review'
+                    'Submit for Review'
                   )}
                 </Button>
               </div>
