@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
@@ -6,7 +5,7 @@ import GameGrid from '../components/GameGrid';
 import FilterSidebar from '../components/FilterSidebar';
 import FeaturedDeveloper from '../components/FeaturedDeveloper';
 import { FilterState, Game, Developer } from '../types';
-import { Gamepad, Archive, Fire, Trophy, Link, Clock } from 'lucide-react';
+import { Gamepad, Archive, Flame, Trophy, Link, Clock } from 'lucide-react';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -234,7 +233,7 @@ const Index: React.FC = () => {
     { name: 'Strategy', icon: <Archive size={18} /> },
     { name: 'Horror', icon: <Clock size={18} /> },
     { name: 'Platformer', icon: <Link size={18} /> },
-    { name: 'Puzzle', icon: <Fire size={18} /> },
+    { name: 'Puzzle', icon: <Flame size={18} /> },
   ];
   
   return (
