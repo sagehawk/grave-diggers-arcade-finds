@@ -6,6 +6,9 @@ import { Database } from '../types/database.types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 
+// Declare the supabase client variable that will be exported
+let supabase: ReturnType<typeof createClient<Database>>;
+
 // Check if supabase credentials are available
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing Supabase environment variables. Check your .env.local file.');
@@ -14,10 +17,12 @@ if (!supabaseUrl || !supabaseKey) {
   // This prevents the app from crashing immediately, but will show proper errors
   const dummyClient = {
     auth: {
-      getUser: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      getSession: async () => ({ data: { session: null }, error: new Error('Supabase not configured') }),
+      getUser: async () => ({ data: { user: null }, error: new Error('Supabase not configured') }),
       signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
       signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
-      signOut: async () => ({ error: new Error('Supabase not configured') })
+      signOut: async () => ({ error: new Error('Supabase not configured') }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
     },
     from: () => ({
       select: () => ({
@@ -38,14 +43,20 @@ if (!supabaseUrl || !supabaseKey) {
     storage: {
       from: () => ({
         upload: async () => ({ data: null, error: new Error('Supabase not configured') }),
-        getPublicUrl: () => ({ data: { publicUrl: '' } })
+        getPublicUrl: () => ({ data: { publicUrl: '' } }),
+        remove: async () => ({ data: null, error: new Error('Supabase not configured') })
       })
-    }
+    },
+    // Add any specific methods that might be used elsewhere in the application
+    rpc: async () => ({ data: null, error: new Error('Supabase not configured') })
   };
 
   // @ts-ignore - TypeScript will complain but this is a temporary solution
-  export const supabase = dummyClient;
+  supabase = dummyClient;
 } else {
   // If we have valid credentials, create the real client
-  export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+  supabase = createClient<Database>(supabaseUrl, supabaseKey);
 }
+
+// Export the supabase client (either real or dummy) as a single top-level export
+export { supabase };
