@@ -6,6 +6,7 @@ import FilterSidebar from '../components/FilterSidebar';
 import FeaturedDeveloper from '../components/FeaturedDeveloper';
 import { FilterState, Game, Developer } from '../types';
 import { Gamepad, Archive, Flame, Trophy, Link, Clock } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -18,6 +19,9 @@ const Index: React.FC = () => {
     sortBy: 'trending',
     timeFrame: 'allTime',
   });
+
+  // Active tab state
+  const [activeTab, setActiveTab] = useState("ripe");
   
   // Sample featured games data
   const featuredGames: Game[] = [
@@ -70,9 +74,9 @@ const Index: React.FC = () => {
       releaseDate: '2023-03-10',
     }
   ];
-  
-  // Hot today games
-  const hotTodayGames: Game[] = [
+
+  // Tabs content data
+  const ripeGames: Game[] = [
     {
       id: '4',
       title: 'Forest Guardian',
@@ -150,8 +154,7 @@ const Index: React.FC = () => {
     }
   ];
 
-  // Fresh games
-  const freshlyDugGames: Game[] = [
+  const newGames: Game[] = [
     {
       id: '9',
       title: 'Space Trader',
@@ -213,141 +216,152 @@ const Index: React.FC = () => {
       releaseDate: '2023-10-30',
     }
   ];
-  
-  // Featured developer
-  const featuredDev: Developer = {
-    id: 'dev1',
-    name: 'RetroStudio Games',
-    avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857',
-    bio: 'Indie game studio focused on creating retro-inspired games with modern gameplay mechanics. Founded in 2019 by a group of passionate pixel-art enthusiasts.',
-    games: ['1', '13', '14'],
-    website: 'https://example.com',
-    twitter: 'https://twitter.com/example',
-    discord: 'https://discord.gg/example',
-  };
-  
-  // Categories for the genre vault
-  const genreCategories = [
-    { name: 'Action', icon: <Gamepad size={18} /> },
-    { name: 'RPG', icon: <Trophy size={18} /> },
-    { name: 'Strategy', icon: <Archive size={18} /> },
-    { name: 'Horror', icon: <Clock size={18} /> },
-    { name: 'Platformer', icon: <Link size={18} /> },
-    { name: 'Puzzle', icon: <Flame size={18} /> },
+
+  const updatedGames: Game[] = [
+    {
+      id: '13',
+      title: 'Galactic Explorer',
+      developer: 'Star Games',
+      thumbnail: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5',
+      description: 'Explore the vast galaxy and discover new planets.',
+      genre: ['Adventure', 'Sci-Fi'],
+      platforms: ['Windows'],
+      price: 19.99,
+      releaseStatus: 'Updated',
+      views: 3500,
+      likes: 720,
+      comments: 135,
+      releaseDate: '2023-09-20',
+    },
+    {
+      id: '14',
+      title: 'Zombie Outbreak',
+      developer: 'Horror Studios',
+      thumbnail: 'https://images.unsplash.com/photo-1559582930-bb01987cf4dd',
+      description: 'Survive in a world infested with zombies.',
+      genre: ['Horror', 'Survival'],
+      platforms: ['Windows', 'PlayStation'],
+      price: 24.99,
+      releaseStatus: 'Updated',
+      views: 4200,
+      likes: 850,
+      comments: 192,
+      releaseDate: '2023-08-15',
+    }
   ];
+  
+  // Get the right games based on active tab
+  const getTabGames = () => {
+    switch (activeTab) {
+      case "ripe": return ripeGames;
+      case "new": return newGames;
+      case "updated": return updatedGames;
+      default: return ripeGames;
+    }
+  };
   
   return (
     <div className="min-h-screen bg-ggrave-black">
       <Navbar />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Hero Banner */}
-        <div className="relative h-[400px] mb-8 rounded-sm overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-cover bg-center" 
-            style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1550745165-9bc0b252726f)' }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-ggrave-black to-transparent" />
+        {/* Hero Section with Gallery and Text */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          {/* Gallery taking 2/3 of the screen */}
+          <div className="md:w-2/3">
+            <GameCarousel games={featuredGames} title="FEATURED GAMES" />
           </div>
           
-          <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-12">
+          {/* Text on the right */}
+          <div className="md:w-1/3 flex flex-col justify-center">
             <h1 className="font-pixel text-white text-2xl md:text-4xl mb-4 animate-flicker">
               Game Over? <br />
               <span className="text-ggrave-red">Dig Up Your Next Adventure.</span>
             </h1>
             
-            <p className="text-gray-300 max-w-md mb-8">
-              GamerGrave is the ultimate destination for discovering your next game obsession,
-              primarily focusing on the vibrant world of indie titles.
-            </p>
-            
-            <div>
-              <button className="pixel-button animate-pixel-pulse">
-                Explore Games
-              </button>
+            {/* Discord Link */}
+            <div className="mt-4">
+              <p className="text-white font-pixel mb-2">Discord:</p>
+              <a 
+                href="#" 
+                className="inline-block bg-[#5865F2] text-white px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
+              >
+                Join our server
+              </a>
             </div>
           </div>
         </div>
         
-        {/* Featured Carousel */}
-        <GameCarousel games={featuredGames} title="FEATURED GAMES" />
-        
-        {/* Main Content Area with Sidebar */}
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Main Game Grid Area */}
-          <div className="md:w-3/4">
-            {/* Hot Today */}
-            <GameGrid
-              games={hotTodayGames}
-              title="HOT TODAY"
-              viewAllLink="/games?sort=trending&timeFrame=today"
-            />
+        {/* Game Grid with Tabs */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <Tabs 
+              defaultValue="ripe" 
+              className="w-full"
+              onValueChange={(value) => setActiveTab(value)}
+            >
+              <TabsList className="bg-ggrave-darkgray border border-gray-700">
+                <TabsTrigger 
+                  value="ripe" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                >
+                  🍌 Ripe
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="new" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                >
+                  + New
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="updated" 
+                  className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white"
+                >
+                  ↻ Updated
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             
-            {/* Genre Vault */}
-            <div className="mb-8">
-              <div className="bg-ggrave-darkgray mb-4 p-2 border-l-4 border-ggrave-red">
-                <h2 className="font-pixel text-white text-sm md:text-base">GENRE VAULTS</h2>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                {genreCategories.map((category) => (
-                  <a
-                    key={category.name}
-                    href={`/games?genre=${category.name}`}
-                    className="bg-ggrave-darkgray border border-gray-800 hover:border-ggrave-red p-4 rounded-sm flex flex-col items-center justify-center transition-colors"
-                  >
-                    <div className="text-ggrave-red mb-2">
-                      {category.icon}
-                    </div>
-                    <span className="text-white text-sm">{category.name}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-            
-            {/* Freshly Dug */}
-            <GameGrid
-              games={freshlyDugGames}
-              title="FRESHLY DUG"
-              viewAllLink="/games?sort=newest"
-            />
+            <button className="bg-ggrave-darkgray text-white px-3 py-1 text-xs rounded-sm ml-2 hover:bg-gray-700">
+              Advanced Filters
+            </button>
           </div>
           
-          {/* Sidebar */}
-          <div className="md:w-1/4 space-y-6">
-            <FilterSidebar filter={filter} onFilterChange={setFilter} />
-            <FeaturedDeveloper developer={featuredDev} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {getTabGames().map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))}
           </div>
         </div>
         
-        {/* Community Buzz Section */}
+        {/* Community Buzz Section - Simplified */}
         <div className="mt-8">
           <div className="bg-ggrave-darkgray mb-4 p-2 border-l-4 border-ggrave-red">
-            <h2 className="font-pixel text-white text-sm md:text-base">COMMUNITY BUZZ</h2>
+            <h2 className="font-pixel text-white text-xs md:text-sm">COMMUNITY BUZZ</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Community post items would go here */}
-            <div className="bg-ggrave-darkgray border border-gray-800 p-4 rounded-sm">
-              <h3 className="text-white font-medium text-sm mb-2">Best Indie RPGs of 2023</h3>
+            <div className="bg-ggrave-darkgray border border-gray-800 p-3 rounded-sm">
+              <h3 className="text-white font-medium text-sm mb-1">Best Indie RPGs of 2023</h3>
               <p className="text-gray-400 text-xs mb-2">
-                Discussion thread with 128 comments started by GameFanatic
+                Discussion thread with 128 comments
               </p>
               <a href="/community/topic/123" className="text-ggrave-red text-xs hover:underline">Join Discussion</a>
             </div>
             
-            <div className="bg-ggrave-darkgray border border-gray-800 p-4 rounded-sm">
-              <h3 className="text-white font-medium text-sm mb-2">Hidden Pixel Art Gems</h3>
+            <div className="bg-ggrave-darkgray border border-gray-800 p-3 rounded-sm">
+              <h3 className="text-white font-medium text-sm mb-1">Hidden Pixel Art Gems</h3>
               <p className="text-gray-400 text-xs mb-2">
-                Review compilation with 95 submissions by PixelPerfect
+                Review compilation with 95 submissions
               </p>
               <a href="/community/topic/456" className="text-ggrave-red text-xs hover:underline">Read Reviews</a>
             </div>
             
-            <div className="bg-ggrave-darkgray border border-gray-800 p-4 rounded-sm">
-              <h3 className="text-white font-medium text-sm mb-2">Indie Dev AMA: RetroStudio</h3>
+            <div className="bg-ggrave-darkgray border border-gray-800 p-3 rounded-sm">
+              <h3 className="text-white font-medium text-sm mb-1">Indie Dev AMA: RetroStudio</h3>
               <p className="text-gray-400 text-xs mb-2">
-                Live Q&A happening now with Pixel Dungeon Crawler developers
+                Live Q&A happening now
               </p>
               <a href="/community/topic/789" className="text-ggrave-red text-xs hover:underline">Ask Questions</a>
             </div>
@@ -355,7 +369,7 @@ const Index: React.FC = () => {
         </div>
       </main>
       
-      <footer className="bg-ggrave-darkgray border-t border-gray-800 py-8 mt-12">
+      <footer className="bg-ggrave-darkgray border-t border-gray-800 py-6 mt-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
