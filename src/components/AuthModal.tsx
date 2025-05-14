@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
