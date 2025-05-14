@@ -331,21 +331,33 @@ const Index: React.FC = () => {
                       {/* Welcome Section */}
                       <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
                         <h3 className="text-white text-sm font-medium mb-2">Welcome</h3>
-                        <p className="text-white text-base">Welcome to GamerGrave!</p>
+                        <Separator className="mb-3 bg-gray-700" />
                         
+                        <p className="text-white text-base">
+                          Welcome to GamerGrave!<br /><br />
+                        </p>
+                        <p className="text-white text-base">
+                          Discord:<br />
+                          <a 
+                            href="https://discord.gg/QJR7JeNxzc" 
+                            className="text-red-500 inline-block"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            Join our Discord
+                          </a>
+                        </p>
+
+
+
                         {/* Discord Link */}
                         <div className="mt-4">
-                          <p className="text-white text-sm mb-2">Discord:</p>
                           <a 
-                            href="https://discord.gg/ASJyTrZ" 
+                            href="https://discord.gg/QJR7JeNxzc" 
                             className="inline-block"
                             rel="noopener noreferrer"
                             target="_blank"
                           >
-                            <Button variant="default" className="bg-ggrave-red hover:bg-red-700 transition-colors">
-                              Join our server
-                            </Button>
-                          </a>
                         </div>
                       </div>
                       
@@ -380,7 +392,7 @@ const Index: React.FC = () => {
               <div className="bg-[#181818] border border-gray-800 p-5 hover:border-gray-700 transition-all">
                 <h3 className="font-pixel text-white text-sm">Welcome</h3>
                 <div className="w-1/4 h-0.5 bg-gray-700 my-2"></div>
-                <p className="text-white text-base mb-4"><br />Welcome to GamerGrave!<br />Discord:</p>
+                <p className="text-white text-base mb-4">Welcome to GamerGrave!<br /><br />Discord:</p>
                 
                 {/* Discord Link */}
                 <div className="mt-5">
