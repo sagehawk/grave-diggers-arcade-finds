@@ -328,39 +328,27 @@ const Index: React.FC = () => {
                       </SheetClose>
                     </div>
                     <div className="p-4 overflow-y-auto h-full">
-                      {/* Welcome Section */}
-                      <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
-                        <h3 className="text-white text-sm font-medium mb-2">Welcome</h3>
-                        <Separator className="mb-3 bg-gray-700" />
-                        
-                        <p className="text-white text-base">
-                          Welcome to GamerGrave!<br /><br />
-                        </p>
-                        <p className="text-white text-base">
-                          Discord:<br />
-                          <a 
-                            href="https://discord.gg/QJR7JeNxzc" 
-                            className="text-red-500 inline-block"
-                            rel="noopener noreferrer"
-                            target="_blank"
-                          >
-                            Join our Discord
-                          </a>
-                        </p>
-
-
-
-                        {/* Discord Link */}
-                        <div className="mt-4">
-                          <a 
-                            href="https://discord.gg/QJR7JeNxzc" 
-                            className="inline-block"
-                            rel="noopener noreferrer"
-                            target="_blank"
-                          >
-                        </div>
-                      </div>
+                    {/* Welcome Section */}
+                    <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
+                      <h3 className="text-white text-sm font-medium mb-2">Welcome</h3>
+                      <Separator className="mb-3 bg-gray-700" />
                       
+                      <p className="text-white text-base">
+                        Welcome to GamerGrave!<br /><br />
+                      </p>
+                      <p className="text-white text-base">
+                        Discord:<br />
+                        <a 
+                          href="https://discord.gg/QJR7JeNxzc" 
+                          className="text-red-500"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          Join our Discord
+                        </a>
+                      </p>
+                    </div>
+
                       {/* Filter Sidebar */}
                       <FilterSidebar filter={filter} onFilterChange={setFilter} />
                       
