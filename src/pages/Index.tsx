@@ -329,8 +329,8 @@ const Index: React.FC = () => {
                     </div>
                     <div className="p-4 overflow-y-auto h-full">
                     {/* Welcome Section */}
-                      <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
-                        <h3 className="text-white text-sm font-medium">Welcome</h3>
+                      <div className="bg-[#181818] border border-gray-800 p-4 mb-3">
+                        <h3 className="font-pixel text-white text-sm">Welcome</h3>
                         <Separator className="mb-3 bg-gray-700" />
                         
                         <p className="text-white text-base">
@@ -377,8 +377,8 @@ const Index: React.FC = () => {
             {/* Right Column Area (Narrower) - The continuous sidebar */}
             <div className="w-full md:w-1/3 space-y-6 hidden md:block">
             {/* Welcome Section */}
-              <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
-                <h3 className="text-white text-sm font-medium">Welcome</h3>
+              <div className="bg-[#181818] border border-gray-800 p-4 mb-3">
+                <h3 className="font-pixel text-white text-sm">Welcome</h3>
                 <Separator className="mb-3 bg-gray-700" />
                 
                 <p className="text-white text-base">
