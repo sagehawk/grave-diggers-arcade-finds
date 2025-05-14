@@ -5,7 +5,7 @@ import GameDetail from './pages/GameDetail';
 import NotFound from './pages/NotFound';
 import SubmitGame from './pages/SubmitGame';
 import UserAccount from './pages/UserAccount';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/auth/AuthProvider';
 import './App.css';
 import { Toaster } from './components/ui/toaster';
 

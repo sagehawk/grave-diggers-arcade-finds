@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, User, XIcon, Upload, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import AuthModal from './AuthModal';
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
     });
   };
 
-  const handleUnearthClick = () => {
+  const handleSubmitClick = () => {
     if (isAuthenticated) {
       navigate('/submit-game');
     } else {
@@ -53,7 +53,7 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
               <img 
-                src="https://i.imgur.com/ItKyOPt.jpeg" 
+                src="https://i.imgur.com/VwH4G7t.png" 
                 alt="GamerGrave Logo" 
                 className="h-12 sm:h-14" 
               />
@@ -78,13 +78,13 @@ const Navbar: React.FC = () => {
           
           {/* Right Side Actions */}
           <div className="flex items-center space-x-3">
-            {/* Unearth New Game Button */}
+            {/* Submit Game Button */}
             <Button 
               size="sm" 
               className="bg-ggrave-red text-white hover:bg-red-700 hidden sm:flex items-center"
-              onClick={handleUnearthClick}
+              onClick={handleSubmitClick}
             >
-              <Upload size={16} className="mr-1.5" /> Unearth New Game
+              <Upload size={16} className="mr-1.5" /> Submit Game
             </Button>
             
             {/* Authentication Controls */}
@@ -120,33 +120,23 @@ const Navbar: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red mr-2 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
+                  className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
                   onClick={() => {
                     setAuthModalView('login');
                     setAuthModalOpen(true);
                   }}
                 >
-                  Log In
-                </Button>
-                <Button 
-                  size="sm" 
-                  className="bg-ggrave-red text-white hover:bg-red-700 focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
-                  onClick={() => {
-                    setAuthModalView('register');
-                    setAuthModalOpen(true);
-                  }}
-                >
-                  Sign Up
+                  Login
                 </Button>
               </div>
             )}
             
-            {/* Mobile "Unearth" Button */}
+            {/* Mobile "Submit" Button */}
             <Button 
               variant="default" 
               size="icon" 
               className="sm:hidden bg-ggrave-red text-white hover:bg-red-700"
-              onClick={handleUnearthClick}
+              onClick={handleSubmitClick}
             >
               <Upload size={18} />
             </Button>
