@@ -338,7 +338,7 @@ const Index: React.FC = () => {
                       </p>
                       <p className="text-white text-base">
                         Discord:<br />
-                        <a 
+                        <a
                           href="https://discord.gg/QJR7JeNxzc" 
                           className="text-red-500"
                           rel="noopener noreferrer"
@@ -376,28 +376,26 @@ const Index: React.FC = () => {
             
             {/* Right Column Area (Narrower) - The continuous sidebar */}
             <div className="w-full md:w-1/3 space-y-6 hidden md:block">
-              {/* Welcome text block */}
-              <div className="bg-[#181818] border border-gray-800 p-5 hover:border-gray-700 transition-all">
-                <h3 className="font-pixel text-white text-sm">Welcome</h3>
-                <div className="w-1/4 h-0.5 bg-gray-700 my-2"></div>
-                <p className="text-white text-base mb-4">Welcome to GamerGrave!<br /><br />Discord:</p>
+              {/* Welcome Section */}
+              <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
+                <h3 className="text-white text-sm font-medium mb-2">Welcome</h3>
+                <Separator className="mb-3 bg-gray-700" />
                 
-                {/* Discord Link */}
-                <div className="mt-5">
+                <p className="text-white text-base">
+                  Welcome to GamerGrave!<br /><br />
+                </p>
+                <p className="text-white text-base">
+                  Discord:<br />
                   <a 
-                    href="https://discord.gg/ASJyTrZ" 
-                    className="inline-block"
+                    href="https://discord.gg/QJR7JeNxzc" 
+                    className="text-red-500"
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    <Button 
-                      variant="default" 
-                      className="bg-ggrave-red hover:bg-red-700 transition-colors focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
-                    >
-                      Join our server
-                    </Button>
                   </a>
-                </div>
+                </p>
+              </div>
+
               </div>
               
               {/* Category Filters */}
