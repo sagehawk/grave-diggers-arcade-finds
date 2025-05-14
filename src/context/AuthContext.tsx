@@ -4,13 +4,16 @@ import { User } from '../types/auth';
 import { supabase } from '../lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { Session } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (username: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: () => Promise<void>;
+  signup: (username: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateUserProfile: (data: { bio?: string }) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
@@ -19,10 +22,12 @@ interface AuthContextType {
 // Create context with default values
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  session: null,
   isAuthenticated: false,
   isLoading: true,
-  login: async () => false,
-  signup: async () => false,
+  login: async () => ({ success: false }),
+  loginWithGoogle: async () => {},
+  signup: async () => ({ success: false }),
   logout: () => {},
   updateUserProfile: async () => false,
   changePassword: async () => false,
@@ -34,18 +39,37 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-
+  
   // Check if user is already logged in (using Supabase session)
   useEffect(() => {
+    // First set up the auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, currentSession) => {
+        setSession(currentSession);
+        
+        if (currentSession) {
+          // Use setTimeout to avoid potential infinite loops
+          setTimeout(() => {
+            handleSessionChange(currentSession);
+          }, 0);
+        } else {
+          setUser(null);
+        }
+      }
+    );
+    
+    // Then check the current session
     const checkSession = async () => {
       try {
         // Get session from Supabase
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (session) {
-          await handleSessionChange(session);
+        if (currentSession) {
+          setSession(currentSession);
+          await handleSessionChange(currentSession);
         }
       } catch (error) {
         console.error('Failed to check auth session:', error);
@@ -54,17 +78,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
     
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session) {
-          await handleSessionChange(session);
-        } else {
-          setUser(null);
-        }
-      }
-    );
-
     checkSession();
     
     // Cleanup subscription on unmount
@@ -112,9 +125,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Login function using Supabase
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
@@ -126,22 +139,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: "Welcome back!",
       });
       
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Login failed:', error);
       
+      const errorMessage = error instanceof Error ? error.message : "Please check your email and password";
+      
       toast({
         title: "Login failed",
-        description: error instanceof Error ? error.message : "Please check your email and password",
+        description: errorMessage,
         variant: "destructive",
       });
       
-      return false;
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Login with Google
+  const loginWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) throw error;
+      
+      // No need for toast here as the page will redirect to Google
+    } catch (error) {
+      console.error('Google login failed:', error);
+      
+      toast({
+        title: "Google login failed",
+        description: error instanceof Error ? error.message : "An error occurred during Google login",
+        variant: "destructive",
+      });
     }
   };
 
   // Signup function using Supabase
-  const signup = async (username: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (username: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -182,17 +221,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: "Welcome to GamerGrave!",
       });
       
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Signup failed:', error);
       
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
       
-      return false;
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -201,6 +242,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await supabase.auth.signOut();
       setUser(null);
+      setSession(null);
       
       toast({
         title: "Logged out",
@@ -296,9 +338,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        session,
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithGoogle,
         signup,
         logout,
         updateUserProfile,
