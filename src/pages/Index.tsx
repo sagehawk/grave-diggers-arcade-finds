@@ -330,7 +330,7 @@ const Index: React.FC = () => {
                     <div className="p-4 overflow-y-auto h-full">
                       {/* Welcome Section */}
                       <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
-                        <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
+                        <h1 className="text-white text-xl md:text-2xl font-bold animate-flicker">
                           Welcome to GamerGrave
                         </h1>
                         
@@ -379,7 +379,7 @@ const Index: React.FC = () => {
             <div className="w-full md:w-1/3 space-y-6 hidden md:block">
               {/* Welcome text block */}
               <div className="bg-[#181818] border border-gray-800 p-5 hover:border-gray-700 transition-all">
-                <h1 className="font-pixel text-white text-xl md:text-2xl animate-flicker">
+                <h1 className="text-white text-xl md:text-2xl font-bold animate-flicker">
                   Welcome to GamerGrave
                 </h1>
                 

@@ -94,7 +94,7 @@ const GameGrid: React.FC<GameGridProps> = ({
   
   return (
     <div className={`mb-6 ${className}`}>
-      <h2 className="font-pixel text-white text-xs md:text-sm mb-3">{title}</h2>
+      {/* Removed the redundant title here */}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {visibleGames.map((game) => (
