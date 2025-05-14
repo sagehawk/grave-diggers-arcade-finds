@@ -380,11 +380,10 @@ const Index: React.FC = () => {
               <div className="bg-[#181818] border border-gray-800 p-5 hover:border-gray-700 transition-all">
                 <h3 className="font-pixel text-white text-sm">Welcome</h3>
                 <div className="w-1/4 h-0.5 bg-gray-700 my-2"></div>
-                <p className="text-white text-base mb-4">Welcome to GamerGrave!</p>
+                <p className="text-white text-base mb-4"><br>Welcome to GamerGrave!<br>Discord:</p>
                 
                 {/* Discord Link */}
                 <div className="mt-5">
-                  <p className="text-white text-base mb-4">Discord:</p>
                   <a 
                     href="https://discord.gg/ASJyTrZ" 
                     className="inline-block"
