@@ -329,24 +329,25 @@ const Index: React.FC = () => {
                     </div>
                     <div className="p-4 overflow-y-auto h-full">
                     {/* Welcome Section */}
-                    <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
-                      <h3 className="text-white text-sm font-medium mb-2">Welcome</h3>
-                      <Separator className="mb-3 bg-gray-700" />
-                      
-                      <p className="text-white text-base">
-                        Welcome to GamerGrave!<br /><br />
-                      </p>
-                      <p className="text-white text-base">
-                        Discord:<br />
-                        <a
-                          href="https://discord.gg/QJR7JeNxzc" 
-                          className="text-red-500"
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                        </a>
-                      </p>
-                    </div>
+                      <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
+                        <h3 className="text-white text-sm font-medium">Welcome</h3>
+                        <Separator className="mb-3 bg-gray-700" />
+                        
+                        <p className="text-white text-base">
+                          Welcome to GamerGrave!<br /><br />
+                        </p>
+                        <p className="text-white text-base">
+                          Discord:<br />
+                          <a
+                            href="https://discord.gg/QJR7JeNxzc" 
+                            className="text-red-500 hover:text-red-400" // Added hover for better UX
+                            rel="noopener noreferrer" // Good for security and performance
+                            target="_blank" // Opens in a new tab
+                          >
+                            https://discord.gg/QJR7JeNxzc
+                          </a>
+                        </p>
+                      </div>
 
                       {/* Filter Sidebar */}
                       <FilterSidebar filter={filter} onFilterChange={setFilter} />
@@ -375,9 +376,9 @@ const Index: React.FC = () => {
             
             {/* Right Column Area (Narrower) - The continuous sidebar */}
             <div className="w-full md:w-1/3 space-y-6 hidden md:block">
-              {/* Welcome Section */}
+            {/* Welcome Section */}
               <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
-                <h3 className="text-white text-sm font-medium mb-2">Welcome</h3>
+                <h3 className="text-white text-sm font-medium">Welcome</h3>
                 <Separator className="mb-3 bg-gray-700" />
                 
                 <p className="text-white text-base">
@@ -385,12 +386,13 @@ const Index: React.FC = () => {
                 </p>
                 <p className="text-white text-base">
                   Discord:<br />
-                  <a 
+                  <a
                     href="https://discord.gg/QJR7JeNxzc" 
-                    className="text-red-500"
-                    rel="noopener noreferrer"
-                    target="_blank"
+                    className="text-red-500 hover:text-red-400" // Added hover for better UX
+                    rel="noopener noreferrer" // Good for security and performance
+                    target="_blank" // Opens in a new tab
                   >
+                    Join our Discord! {/* <--- ADD YOUR LINK TEXT HERE */}
                   </a>
                 </p>
               </div>
