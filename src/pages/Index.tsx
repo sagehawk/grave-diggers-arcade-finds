@@ -392,7 +392,7 @@ const Index: React.FC = () => {
                     rel="noopener noreferrer" // Good for security and performance
                     target="_blank" // Opens in a new tab
                   >
-                    Join our Discord! {/* <--- ADD YOUR LINK TEXT HERE */}
+                    https://discord.gg/QJR7JeNxzc
                   </a>
                 </p>
               </div>
