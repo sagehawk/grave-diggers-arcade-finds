@@ -66,7 +66,7 @@ const CommunityBuzzSection: React.FC<CommunityBuzzSectionProps> = ({ className =
   return (
     <div className={`${className}`}>
       <div className="bg-[#181818] border-l-4 border-ggrave-red p-2 mb-3">
-        <h2 className="font-pixel text-white text-xs md:text-sm">COMMUNITY BUZZ</h2>
+        <h3 className="text-white text-sm font-medium">COMMUNITY BUZZ</h3>
       </div>
       
       <div className="space-y-3">

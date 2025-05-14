@@ -25,8 +25,8 @@ const config: Config = {
       },
       colors: {
         ggrave: {
-          black: '#111111',
-          darkgray: '#181818',
+          black: '#151515',
+          darkgray: '#1e1e1e',
           red: '#E30611',
         },
         border: "hsl(var(--border))",

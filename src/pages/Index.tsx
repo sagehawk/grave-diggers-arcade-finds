@@ -320,7 +320,7 @@ const Index: React.FC = () => {
                   </SheetTrigger>
                   <SheetContent side="right" className="w-[85vw] sm:w-[350px] p-0 bg-ggrave-black border-gray-800">
                     <div className="p-4 flex justify-between items-center border-b border-gray-800">
-                      <h3 className="font-pixel text-white text-sm">Filters</h3>
+                      <h3 className="text-white text-sm font-medium">Filters</h3>
                       <SheetClose asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-800 transition-colors">
                           <X className="h-4 w-4" />
@@ -330,13 +330,12 @@ const Index: React.FC = () => {
                     <div className="p-4 overflow-y-auto h-full">
                       {/* Welcome Section */}
                       <div className="bg-[#181818] border border-gray-800 p-4 mb-4">
-                        <h1 className="text-white text-xl md:text-2xl font-bold animate-flicker">
-                          Welcome to GamerGrave
-                        </h1>
+                        <h3 className="text-white text-sm font-medium mb-2">Welcome</h3>
+                        <p className="text-white text-base">Welcome to GamerGrave!</p>
                         
                         {/* Discord Link */}
                         <div className="mt-4">
-                          <p className="text-white font-pixel mb-2">Discord:</p>
+                          <p className="text-white text-sm mb-2">Discord:</p>
                           <a 
                             href="https://discord.gg/ASJyTrZ" 
                             className="inline-block"
@@ -379,13 +378,12 @@ const Index: React.FC = () => {
             <div className="w-full md:w-1/3 space-y-6 hidden md:block">
               {/* Welcome text block */}
               <div className="bg-[#181818] border border-gray-800 p-5 hover:border-gray-700 transition-all">
-                <h1 className="text-white text-xl md:text-2xl font-bold animate-flicker">
-                  Welcome to GamerGrave
-                </h1>
+                <h3 className="text-white text-sm font-medium mb-3">Welcome</h3>
+                <p className="text-white text-base mb-4">Welcome to GamerGrave!</p>
                 
                 {/* Discord Link */}
                 <div className="mt-5">
-                  <p className="text-white font-pixel mb-3">Discord:</p>
+                  <p className="text-white text-sm mb-3">Discord:</p>
                   <a 
                     href="https://discord.gg/ASJyTrZ" 
                     className="inline-block"
