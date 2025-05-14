@@ -344,7 +344,6 @@ const Index: React.FC = () => {
                           rel="noopener noreferrer"
                           target="_blank"
                         >
-                          Join our Discord
                         </a>
                       </p>
                     </div>
@@ -394,8 +393,6 @@ const Index: React.FC = () => {
                   >
                   </a>
                 </p>
-              </div>
-
               </div>
               
               {/* Category Filters */}
