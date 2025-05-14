@@ -378,12 +378,12 @@ const Index: React.FC = () => {
             <div className="w-full md:w-1/3 space-y-6 hidden md:block">
               {/* Welcome text block */}
               <div className="bg-[#181818] border border-gray-800 p-5 hover:border-gray-700 transition-all">
-                <h3 className="text-white text-sm font-medium mb-3">Welcome</h3>
+                <h3 className="font-pixel text-white text-sm">Welcome</h3>
                 <p className="text-white text-base mb-4">Welcome to GamerGrave!</p>
                 
                 {/* Discord Link */}
                 <div className="mt-5">
-                  <p className="text-white text-sm mb-3">Discord:</p>
+                  <p className="font-pixel text-white text-sm">Discord:</p>
                   <a 
                     href="https://discord.gg/ASJyTrZ" 
                     className="inline-block"
@@ -422,7 +422,7 @@ const Index: React.FC = () => {
                   className="h-8 mb-4"
                 />
                 <p className="text-gray-400 text-xs">
-                  © 2023 GamerGrave. All rights reserved.
+                  © 2025 GamerGrave. All rights reserved.
                 </p>
               </div>
               

@@ -53,7 +53,7 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
               <img 
-                src="https://i.imgur.com/VwH4G7t.png" 
+                src="https://i.imgur.com/ItKyOPt.jpeg" 
                 alt="GamerGrave Logo" 
                 className="h-12 sm:h-14" 
               />
