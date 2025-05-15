@@ -90,9 +90,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white">Username</FormLabel>
+                <FormLabel className="text-white" htmlFor="username">Username</FormLabel>
                 <FormControl>
                   <Input 
+                    id="username"
+                    name="username"
                     {...field} 
                     className="bg-gray-800 border-gray-700 text-white"
                     disabled 
@@ -111,9 +113,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white">Email</FormLabel>
+                <FormLabel className="text-white" htmlFor="email">Email</FormLabel>
                 <FormControl>
                   <Input 
+                    id="email"
+                    name="email"
                     {...field} 
                     className="bg-gray-800 border-gray-700 text-white"
                     disabled 
@@ -132,9 +136,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
             name="bio"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white">Bio</FormLabel>
+                <FormLabel className="text-white" htmlFor="bio">Bio</FormLabel>
                 <FormControl>
                   <Textarea 
+                    id="bio"
+                    name="bio"
                     {...field} 
                     className="bg-gray-800 border-gray-700 text-white resize-none min-h-[100px]" 
                     placeholder="Tell the community about yourself..." 
@@ -157,9 +163,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
               name="currentPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">Current Password</FormLabel>
+                  <FormLabel className="text-white" htmlFor="currentPassword">Current Password</FormLabel>
                   <FormControl>
                     <Input 
+                      id="currentPassword"
+                      name="currentPassword"
                       {...field} 
                       type="password" 
                       className="bg-gray-800 border-gray-700 text-white" 
@@ -177,9 +185,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">New Password</FormLabel>
+                    <FormLabel className="text-white" htmlFor="newPassword">New Password</FormLabel>
                     <FormControl>
                       <Input 
+                        id="newPassword"
+                        name="newPassword"
                         {...field} 
                         type="password" 
                         className="bg-gray-800 border-gray-700 text-white" 
@@ -196,9 +206,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                 name="confirmNewPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Confirm New Password</FormLabel>
+                    <FormLabel className="text-white" htmlFor="confirmNewPassword">Confirm New Password</FormLabel>
                     <FormControl>
                       <Input 
+                        id="confirmNewPassword"
+                        name="confirmNewPassword"
                         {...field} 
                         type="password" 
                         className="bg-gray-800 border-gray-700 text-white" 

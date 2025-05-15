@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -153,6 +152,33 @@ const SubmitGame: React.FC = () => {
         description: "Optimizing images for upload. Please wait...",
       });
       
+      // Check if storage buckets exist and create if they don't
+      const { data: bucketListData, error: bucketListError } = await supabase
+        .storage
+        .listBuckets();
+        
+      if (bucketListError) {
+        console.error("Error checking buckets:", bucketListError);
+      }
+      
+      const buckets = bucketListData || [];
+      const bucketNames = buckets.map(bucket => bucket.name);
+      
+      // Create required buckets if they don't exist
+      if (!bucketNames.includes('games')) {
+        const { error: createError } = await supabase
+          .storage
+          .createBucket('games', {
+            public: true,
+            fileSizeLimit: 10485760, // 10MB
+          });
+          
+        if (createError) {
+          console.error("Error creating games bucket:", createError);
+          throw new Error(`Failed to create storage bucket: ${createError.message}`);
+        }
+      }
+      
       // Process thumbnail
       let thumbnailUrl = '';
       if (data.thumbnail && data.thumbnail.length > 0) {
@@ -199,11 +225,6 @@ const SubmitGame: React.FC = () => {
         galleryUrls = await Promise.all(uploadPromises);
       }
       
-      // Parse custom tags
-      const customTags = data.customTags ? 
-        data.customTags.split(',').map(tag => tag.trim()) : 
-        [];
-      
       // Prepare game data for database
       const gameData = {
         title: data.title,
@@ -220,7 +241,6 @@ const SubmitGame: React.FC = () => {
         releaseDate: new Date().toISOString(),
         mediaGallery: galleryUrls.length > 0 ? galleryUrls : null,
         videoUrl: data.trailerUrl || null,
-        customTags: customTags.length > 0 ? customTags : null,
         submitter_user_id: user.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -474,29 +494,6 @@ const SubmitGame: React.FC = () => {
                         />
                       ))}
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Custom Tags */}
-              <FormField
-                control={form.control}
-                name="customTags"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-tags">Custom Tags</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-tags"
-                        placeholder="pixel art, difficult, co-op" 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      Comma-separated list of custom tags that describe your game.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

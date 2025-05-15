@@ -55,21 +55,22 @@ const UserAccount: React.FC = () => {
         
         // Get user by username from profiles table
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
+          .from('users')
           .select('*')
           .eq('username', username)
           .single();
           
         if (profileError) {
+          console.error('Error fetching user data:', profileError);
           throw new Error('User not found');
         }
         
         setProfileUser({
           id: profileData.id,
           username: profileData.username,
-          createdAt: new Date(profileData.created_at),
+          createdAt: new Date(profileData.createdAt),
           bio: profileData.bio,
-          avatarUrl: profileData.avatar_url
+          avatarUrl: profileData.avatarUrl
         });
       } catch (error) {
         console.error('Error fetching user data:', error);

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Game } from '../types';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Eye, ThumbsUp, MessageSquare } from 'lucide-react';
 
 interface GameCardProps {
   game: Game;
@@ -41,6 +42,22 @@ const GameCard: React.FC<GameCardProps> = ({ game, className }) => {
               )}
             </div>
           )}
+          
+          {/* Game Stats */}
+          <div className="absolute top-2 right-2 flex gap-2">
+            <div className="bg-black bg-opacity-70 px-1.5 py-0.5 rounded text-white text-xs flex items-center">
+              <Eye size={12} className="mr-1" />
+              {game.views}
+            </div>
+            <div className="bg-black bg-opacity-70 px-1.5 py-0.5 rounded text-white text-xs flex items-center">
+              <ThumbsUp size={12} className="mr-1" />
+              {game.likes}
+            </div>
+            <div className="bg-black bg-opacity-70 px-1.5 py-0.5 rounded text-white text-xs flex items-center">
+              <MessageSquare size={12} className="mr-1" />
+              {game.comments}
+            </div>
+          </div>
         </div>
         
         <div className="p-3">
@@ -57,10 +74,12 @@ const GameCard: React.FC<GameCardProps> = ({ game, className }) => {
               {game.releaseStatus || 'Unknown'}
             </span>
             
-            {/* Price */}
-            <span className="text-sm text-gray-400">
-              {game.price || 'Free'}
-            </span>
+            {/* Price - Show "Free" tag only if price is "Free" */}
+            {game.price === "Free" && (
+              <span className="text-sm bg-ggrave-red bg-opacity-80 px-2 py-0.5 rounded text-white">
+                Free
+              </span>
+            )}
           </div>
         </div>
       </div>
