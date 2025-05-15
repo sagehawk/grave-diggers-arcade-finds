@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { 
@@ -149,31 +148,20 @@ const SubmitGame: React.FC = () => {
         description: "Optimizing images for upload. Please wait...",
       });
       
-      // Check if storage buckets exist and create if they don't
-      const { data: bucketListData, error: bucketListError } = await supabase
-        .storage
-        .listBuckets();
+      // Create a public bucket for games without checking if it exists first
+      try {
+        // Try to create the bucket (will error if exists, but we'll catch that)
+        const { error: createError } = await supabase.storage.createBucket('games', {
+          public: true,
+          fileSizeLimit: 10485760, // 10MB
+        });
         
-      if (bucketListError) {
-        console.error("Error checking buckets:", bucketListError);
-      }
-      
-      const buckets = bucketListData || [];
-      const bucketNames = buckets.map(bucket => bucket.name);
-      
-      // Create required buckets if they don't exist
-      if (!bucketNames.includes('games')) {
-        const { error: createError } = await supabase
-          .storage
-          .createBucket('games', {
-            public: true,
-            fileSizeLimit: 10485760, // 10MB
-          });
-          
-        if (createError) {
+        if (createError && !createError.message.includes('already exists')) {
           console.error("Error creating games bucket:", createError);
-          throw new Error(`Failed to create storage bucket: ${createError.message}`);
         }
+      } catch (bucketError) {
+        // Bucket likely already exists, we can continue
+        console.log("Bucket may already exist:", bucketError);
       }
       
       // Process thumbnail

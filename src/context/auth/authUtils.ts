@@ -7,9 +7,9 @@ export async function handleSessionChange(session: Session): Promise<User | null
   try {
     const userId = session.user.id;
     
-    // Get user profile from public profiles table
+    // Get user profile from users table (not profiles)
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('id', userId)
       .single();
@@ -22,8 +22,8 @@ export async function handleSessionChange(session: Session): Promise<User | null
       id: userId,
       email: session.user.email || '',
       username: profile?.username || session.user.email?.split('@')[0] || 'User',
-      createdAt: profile?.created_at ? new Date(profile.created_at) : new Date(),
-      avatarUrl: profile?.avatar_url || undefined,
+      createdAt: profile?.createdAt ? new Date(profile.createdAt) : new Date(),
+      avatarUrl: profile?.avatarUrl || undefined,
       bio: profile?.bio || undefined
     };
   } catch (error) {
