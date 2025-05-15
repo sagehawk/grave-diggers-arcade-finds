@@ -1,20 +1,11 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { 
   Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../hooks/useAuth';
@@ -22,6 +13,12 @@ import { Genre, Platform } from '../types';
 import { validateFileSize, optimizeImage, optimizeMultipleImages } from '../utils/imageOptimization';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import LoadingIndicator from '../components/LoadingIndicator';
+import BasicInfoFields from '../components/GameSubmission/BasicInfoFields';
+import MediaUploadFields from '../components/GameSubmission/MediaUploadFields';
+import GenreFields from '../components/GameSubmission/GenreFields';
+import GameDetailsFields from '../components/GameSubmission/GameDetailsFields';
+import PlatformFields from '../components/GameSubmission/PlatformFields';
 
 interface GameSubmissionForm {
   title: string;
@@ -290,368 +287,24 @@ const SubmitGame: React.FC = () => {
         <div className="bg-gray-900 border border-gray-800 rounded-md p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Game Title */}
-              <FormField
-                control={form.control}
-                name="title"
-                rules={{ required: "Game title is required" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-title">Game Title</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-title"
-                        placeholder="Enter your game title" 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      The main title of your game that will be displayed to users.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              {/* Basic Info Fields */}
+              <BasicInfoFields form={form} />
+              
+              {/* Media Upload Fields */}
+              <MediaUploadFields 
+                form={form} 
+                validateAndPreviewFile={validateAndPreviewFile} 
+                fileErrors={fileErrors} 
               />
               
-              {/* Tagline */}
-              <FormField
-                control={form.control}
-                name="tagline"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-tagline">Tagline</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-tagline"
-                        placeholder="A short catchy slogan for your game" 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        maxLength={150}
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      A brief description or slogan (max 150 characters).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Genre Fields */}
+              <GenreFields form={form} availableGenres={availableGenres} />
               
-              {/* Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                rules={{ required: "Game description is required" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-description">Full Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        id="game-description"
-                        placeholder="Describe your game in detail..." 
-                        className="min-h-[150px] bg-gray-800 border-gray-700 text-white"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      A detailed description of your game, including features, storyline, etc.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Game Status and Platform Fields */}
+              <GameDetailsFields form={form} />
               
-              {/* Thumbnail */}
-              <FormField
-                control={form.control}
-                name="thumbnail"
-                rules={{ required: "Game thumbnail is required" }}
-                render={({ field: { value, onChange, ...fieldProps } }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-thumbnail">Main Thumbnail</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-thumbnail"
-                        name="game-thumbnail"
-                        type="file" 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        accept="image/jpeg,image/png,image/webp" 
-                        onChange={(e) => validateAndPreviewFile(e, 'thumbnail')}
-                        {...fieldProps} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      Upload a main cover image for your game (recommended: 1280x720px). JPG format preferred. Max size: 5MB.
-                    </FormDescription>
-                    {fileErrors.thumbnail && (
-                      <p className="text-sm font-medium text-destructive mt-1">{fileErrors.thumbnail}</p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Gallery Images */}
-              <FormField
-                control={form.control}
-                name="galleryImages"
-                render={({ field: { value, onChange, ...fieldProps } }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-gallery">Gallery Images</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-gallery"
-                        name="game-gallery"
-                        type="file" 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        accept="image/jpeg,image/png,image/webp" 
-                        multiple
-                        onChange={(e) => validateAndPreviewFile(e, 'galleryImages')}
-                        {...fieldProps} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      Upload up to 5 additional screenshots or artwork. JPG format preferred. Max size: 5MB per image.
-                    </FormDescription>
-                    {fileErrors.galleryImages && fileErrors.galleryImages.map((error, i) => (
-                      <p key={i} className="text-sm font-medium text-destructive mt-1">{error}</p>
-                    ))}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Trailer URL */}
-              <FormField
-                control={form.control}
-                name="trailerUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-trailer">Trailer Link</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-trailer"
-                        placeholder="https://www.youtube.com/watch?v=..." 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      YouTube or Vimeo link to your game trailer (preferred over uploading video files).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Genres */}
-              <FormField
-                control={form.control}
-                name="genres"
-                render={() => (
-                  <FormItem>
-                    <div className="mb-4">
-                      <FormLabel className="text-white">Genres</FormLabel>
-                      <FormDescription className="text-gray-400">
-                        Select all genres that apply to your game.
-                      </FormDescription>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {availableGenres.map((genre) => (
-                        <FormField
-                          key={genre}
-                          control={form.control}
-                          name="genres"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={genre}
-                                className="flex flex-row items-start space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    id={`genre-${genre.toLowerCase()}`}
-                                    name={`genre-${genre.toLowerCase()}`}
-                                    checked={field.value?.includes(genre)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, genre])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== genre
-                                            )
-                                          )
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-white" htmlFor={`genre-${genre.toLowerCase()}`}>
-                                  {genre}
-                                </FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Game Status */}
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-status">Game Status</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger id="game-status" className="bg-gray-800 border-gray-700 text-white">
-                          <SelectValue placeholder="Select game status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        <SelectItem value="Released">Completed</SelectItem>
-                        <SelectItem value="In Development">In Development</SelectItem>
-                        <SelectItem value="Demo Available">Demo Available</SelectItem>
-                        <SelectItem value="Concept">Open [Idea/Request]</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription className="text-gray-400">
-                      The current development status of your game.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Platforms */}
-              <FormField
-                control={form.control}
-                name="platforms"
-                render={() => (
-                  <FormItem>
-                    <div className="mb-4">
-                      <FormLabel className="text-white">Platforms</FormLabel>
-                      <FormDescription className="text-gray-400">
-                        Select all platforms your game is available on.
-                      </FormDescription>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {availablePlatforms.map((platform) => (
-                        <FormField
-                          key={platform}
-                          control={form.control}
-                          name="platforms"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={platform}
-                                className="flex flex-row items-start space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    id={`platform-${platform.toLowerCase()}`}
-                                    name={`platform-${platform.toLowerCase()}`}
-                                    checked={field.value?.includes(platform)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, platform])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== platform
-                                            )
-                                          )
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-white" htmlFor={`platform-${platform.toLowerCase()}`}>
-                                  {platform}
-                                </FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Price */}
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-price">Price</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-price"
-                        placeholder="Free, $9.99, TBD" 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      The price of your game, or "Free" if it's available for free.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Store Link */}
-              <FormField
-                control={form.control}
-                name="storeLink"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-store-link">Store/Download Link</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-store-link"
-                        placeholder="https://store.steampowered.com/..." 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      Link to purchase or download your game.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Developer Link */}
-              <FormField
-                control={form.control}
-                name="developerLink"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white" htmlFor="game-dev-link">Developer Website</FormLabel>
-                    <FormControl>
-                      <Input 
-                        id="game-dev-link"
-                        placeholder="https://yourstudio.com" 
-                        className="bg-gray-800 border-gray-700 text-white"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-gray-400">
-                      Link to your developer website or profile (optional).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Platform Fields */}
+              <PlatformFields form={form} availablePlatforms={availablePlatforms} />
               
               {/* Submit buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">

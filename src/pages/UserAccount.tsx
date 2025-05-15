@@ -4,12 +4,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '../components/Navbar';
 import UserSubmissions from '../components/UserSubmissions';
 import ProfileSettings from '../components/ProfileSettings';
+import ProfileHeader from '../components/UserProfile/ProfileHeader';
+import UserBio from '../components/UserProfile/UserBio';
 import { Loader2 } from 'lucide-react';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const UserAccount: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -93,7 +95,7 @@ const UserAccount: React.FC = () => {
       <div className="min-h-screen bg-ggrave-black text-white">
         <Navbar />
         <div className="max-w-[1440px] mx-auto px-4 py-8 flex items-center justify-center">
-          <Loader2 size={40} className="animate-spin text-ggrave-red" />
+          <LoadingIndicator />
         </div>
       </div>
     );
@@ -119,23 +121,7 @@ const UserAccount: React.FC = () => {
       
       <div className="max-w-[1440px] mx-auto px-4 py-8">
         {/* Profile Header/Banner */}
-        <div className="bg-gray-900 p-6 rounded-lg mb-6">
-          <div className="flex items-center gap-6">
-            <Avatar className="h-20 w-20 border-2 border-ggrave-red">
-              <AvatarImage src={profileUser.avatarUrl} alt={profileUser.username} />
-              <AvatarFallback className="bg-gray-800 text-xl">
-                {profileUser.username.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div>
-              <h1 className="text-3xl font-pixel text-white">{profileUser.username}</h1>
-              <p className="text-gray-400">
-                Member since {new Date(profileUser.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-        </div>
+        <ProfileHeader profileUser={profileUser} />
         
         {/* Tabs Navigation */}
         <Tabs defaultValue="submissions" className="w-full">
@@ -194,14 +180,7 @@ const UserAccount: React.FC = () => {
             </TabsContent>
           ) : (
             <TabsContent value="profile" className="mt-0">
-              <div className="bg-gray-900 p-6 rounded-lg">
-                <h2 className="text-xl font-bold mb-4">About {profileUser.username}</h2>
-                {profileUser.bio ? (
-                  <p className="text-gray-300">{profileUser.bio}</p>
-                ) : (
-                  <p className="text-gray-500 italic">This user hasn't added a bio yet.</p>
-                )}
-              </div>
+              <UserBio username={profileUser.username} bio={profileUser.bio} />
             </TabsContent>
           )}
           
