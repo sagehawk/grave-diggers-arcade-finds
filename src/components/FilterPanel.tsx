@@ -1,29 +1,16 @@
-import React, { useState } from 'react';
-import { FilterState, Genre, Platform } from '../types';
-import { 
-  Filter, ChevronDown, ChevronUp, X, 
-  SortAsc, Clock
-} from 'lucide-react';
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from '@/components/ui/collapsible';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuRadioGroup, 
-  DropdownMenuRadioItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { toast } from '@/hooks/use-toast';
 
-// Extract reusable components to reduce file size
+import React, { useState, useEffect } from 'react';
+import { FilterState, Genre, Platform } from '../types';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { 
+  Slider,
+  Switch,
+  Checkbox,
+  Label 
+} from '@/components/ui/shadcn-components';
+import { Check, ChevronDown, ChevronUp, Clock, Filter } from 'lucide-react';
 import FilterSectionHeader from './filter/FilterSectionHeader';
+import { supabase } from '../lib/supabase';
 
 interface FilterPanelProps {
   filter: FilterState;
@@ -31,410 +18,464 @@ interface FilterPanelProps {
   className?: string;
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ 
-  filter, 
-  onFilterChange,
-  className = '' 
-}) => {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, className = '' }) => {
+  // State for expanded sections
+  const [expandedSections, setExpandedSections] = useState({
     sort: true,
     timeFrame: true,
     genres: true,
     platforms: true,
     price: true,
     releaseStatus: true,
-    tags: false,
   });
+
+  // State for available genres and platforms from the database
+  const [availableGenres, setAvailableGenres] = useState<{ name: string; slug: string; count: number }[]>([]);
+  const [availablePlatforms, setAvailablePlatforms] = useState<{ name: string; count: number }[]>([]);
   
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => ({
+  useEffect(() => {
+    // Fetch genres from Supabase
+    const fetchGenres = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('genres')
+          .select(`
+            name,
+            slug,
+            game_genres (
+              game_id
+            )
+          `);
+          
+        if (error) throw error;
+        
+        // Transform data and count games per genre
+        const genresWithCount = data.map(genre => ({
+          name: genre.name,
+          slug: genre.slug,
+          count: genre.game_genres ? genre.game_genres.length : 0
+        }));
+        
+        setAvailableGenres(genresWithCount);
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      }
+    };
+    
+    // Get unique platforms from games table
+    const fetchPlatforms = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('games')
+          .select('platform_tags');
+          
+        if (error) throw error;
+        
+        // Count occurrences of each platform
+        const platformCounts: Record<string, number> = {};
+        data.forEach(game => {
+          if (game.platform_tags && Array.isArray(game.platform_tags)) {
+            game.platform_tags.forEach((platform: string) => {
+              platformCounts[platform] = (platformCounts[platform] || 0) + 1;
+            });
+          }
+        });
+        
+        // Transform to array format
+        const platforms = Object.entries(platformCounts).map(([name, count]) => ({
+          name,
+          count
+        }));
+        
+        setAvailablePlatforms(platforms);
+      } catch (error) {
+        console.error('Error fetching platforms:', error);
+      }
+    };
+    
+    fetchGenres();
+    fetchPlatforms();
+  }, []);
+
+  // Toggle individual section expanded state
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
       ...prev,
-      [section]: !prev[section],
+      [section]: !prev[section]
     }));
   };
-  
-  const updateGenre = (genre: Genre, checked: boolean) => {
-    const newGenres = checked 
-      ? [...filter.genres, genre]
-      : filter.genres.filter((g) => g !== genre);
+
+  // Handle genre selection
+  const handleGenreChange = (genre: string, selected: boolean) => {
+    let newGenres: Genre[];
+    
+    if (selected) {
+      newGenres = [...filter.genres, genre as Genre];
+    } else {
+      newGenres = filter.genres.filter(g => g !== genre);
+    }
     
     onFilterChange({
       ...filter,
-      genres: newGenres,
+      genres: newGenres
     });
   };
-  
-  const updatePlatform = (platform: Platform, checked: boolean) => {
-    const newPlatforms = checked
-      ? [...filter.platforms, platform]
-      : filter.platforms.filter((p) => p !== platform);
+
+  // Handle platform selection
+  const handlePlatformChange = (platform: string, selected: boolean) => {
+    let newPlatforms: Platform[];
+    
+    if (selected) {
+      newPlatforms = [...filter.platforms, platform as Platform];
+    } else {
+      newPlatforms = filter.platforms.filter(p => p !== platform);
+    }
     
     onFilterChange({
       ...filter,
-      platforms: newPlatforms,
+      platforms: newPlatforms
     });
   };
-  
-  const updateReleaseStatus = (status: string, checked: boolean) => {
-    const newStatuses = checked
-      ? [...filter.releaseStatus, status]
-      : filter.releaseStatus.filter((s) => s !== status);
+
+  // Handle release status selection
+  const handleReleaseStatusChange = (status: string, selected: boolean) => {
+    let newReleaseStatus: string[];
+    
+    if (selected) {
+      newReleaseStatus = [...filter.releaseStatus, status];
+    } else {
+      newReleaseStatus = filter.releaseStatus.filter(s => s !== status);
+    }
     
     onFilterChange({
       ...filter,
-      releaseStatus: newStatuses,
+      releaseStatus: newReleaseStatus
     });
   };
 
-  const updateSortBy = (value: string) => {
+  // Handle sort by change
+  const handleSortByChange = (sortBy: FilterState['sortBy']) => {
     onFilterChange({
       ...filter,
-      sortBy: value as FilterState['sortBy']
+      sortBy
     });
   };
 
-  const updateTimeFrame = (value: string) => {
+  // Handle time frame change
+  const handleTimeFrameChange = (timeFrame: FilterState['timeFrame']) => {
     onFilterChange({
       ...filter,
-      timeFrame: value as FilterState['timeFrame']
+      timeFrame
     });
   };
 
-  const clearAllFilters = () => {
+  // Handle price range change
+  const handlePriceRangeChange = (value: [number, number]) => {
     onFilterChange({
-      genres: [],
-      platforms: [],
-      priceRange: [0, 100],
-      releaseStatus: [],
-      searchQuery: '',
-      sortBy: 'trending',
-      timeFrame: 'allTime'
-    });
-    toast({
-      title: "Filters cleared",
-      description: "All filters have been reset to default values",
+      ...filter,
+      priceRange: value
     });
   };
-  
-  // Available options
-  const genres: Genre[] = [
-    "Action", "Adventure", "RPG", "Strategy", 
-    "Puzzle", "Simulation", "Sports", "Racing", 
-    "Horror", "Platformer", "Shooter", "Fighting", 
-    "Casual", "Other"
-  ];
-  
-  const platforms: Platform[] = [
-    "Windows", "Mac", "Linux", "Browser", 
-    "Mobile", "Switch", "PlayStation", "Xbox"
-  ];
-  
-  const releaseStatuses = [
-    "Released", "Early Access", "Demo Available", 
-    "In Development", "Concept"
-  ];
 
-  const sortOptions = [
-    { label: 'Relevance', value: 'relevance', showSearch: true },
-    { label: 'Trending', value: 'trending', showTimeFrame: true },
-    { label: 'Most Popular', value: 'mostViewed', showTimeFrame: true },
-    { label: 'Top Rated', value: 'highestRated', showTimeFrame: true },
-    { label: 'Newest Releases', value: 'releaseDate' },
-    { label: 'Recently Added', value: 'newest' },
-    { label: 'Price: Low to High', value: 'priceAsc' },
-    { label: 'Price: High to Low', value: 'priceDesc' },
-    { label: 'Name: A-Z', value: 'nameAsc' },
-    { label: 'Name: Z-A', value: 'nameDesc' }
-  ];
-
-  const timeFrameOptions = [
-    { label: 'All Time', value: 'allTime' },
-    { label: 'Past 24 Hours', value: 'today' },
-    { label: 'Past Week', value: 'week' },
-    { label: 'Past Month', value: 'month' },
-    { label: 'Past 3 Months', value: 'quarter' },
-    { label: 'Past Year', value: 'year' }
-  ];
-
-  // Find the current sort option
-  const currentSortOption = sortOptions.find(option => option.value === filter.sortBy) || sortOptions[0];
-  
-  // Check if timeframe should be shown based on the current sort
-  const showTimeFrame = currentSortOption.showTimeFrame;
-
-  // Find the current timeframe option
-  const currentTimeFrameOption = timeFrameOptions.find(option => option.value === filter.timeFrame) || timeFrameOptions[0];
-  
   return (
-    <div className={`bg-ggrave-darkgray w-full rounded-sm border border-gray-800 ${className}`}>
-      <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-        <h3 className="font-pixel text-white text-sm flex items-center">
-          <Filter size={16} className="mr-2" />
-          Filters
-        </h3>
-        
+    <div className={`bg-[#181818] border border-gray-800 p-4 rounded-lg ${className}`}>
+      <h3 className="font-pixel text-white text-sm mb-4 flex items-center">
+        <Filter size={16} className="mr-2" />
+        FILTERS
+      </h3>
+      
+      {/* Sort By Section */}
+      <div className="mb-4">
         <button 
-          className="text-xs text-ggrave-red hover:underline" 
-          onClick={clearAllFilters}
+          className="w-full flex justify-between items-center text-white text-sm mb-2"
+          onClick={() => toggleSection('sort')}
         >
-          Reset All
+          <FilterSectionHeader 
+            icon={Check} 
+            title="SORT BY" 
+            isExpanded={expandedSections.sort} 
+          />
         </button>
+        
+        {expandedSections.sort && (
+          <div className="space-y-2 mt-3 ml-1">
+            {[
+              { value: 'trending', label: 'Trending' },
+              { value: 'mostViewed', label: 'Most Viewed' },
+              { value: 'mostLiked', label: 'Most Liked' },
+              { value: 'newest', label: 'Recently Added' },
+              { value: 'releaseDate', label: 'Release Date' },
+              { value: 'priceAsc', label: 'Price: Low to High' },
+              { value: 'priceDesc', label: 'Price: High to Low' },
+              { value: 'nameAsc', label: 'Name: A-Z' },
+              { value: 'nameDesc', label: 'Name: Z-A' }
+            ].map((option) => (
+              <div key={option.value} className="flex items-center">
+                <button
+                  className={`text-sm py-1 w-full text-left ${
+                    filter.sortBy === option.value 
+                      ? 'text-ggrave-red font-medium' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  onClick={() => handleSortByChange(option.value as FilterState['sortBy'])}
+                >
+                  {option.label}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       
-      {/* Sort By */}
-      <Collapsible
-        open={expandedSections.sort}
-        onOpenChange={() => toggleSection('sort')}
-        className="border-b border-gray-800"
-      >
-        <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
-          <h4 className="text-white text-sm font-medium flex items-center">
-            <SortAsc size={16} className="mr-2" />
-            Sort By
-          </h4>
-          {expandedSections.sort ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent className="p-4 pt-0 space-y-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline"
-                className="w-full bg-ggrave-black text-white text-sm border border-gray-700 justify-between"
-              >
-                {currentSortOption.label}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-ggrave-black border-gray-700">
-              <DropdownMenuRadioGroup 
-                value={filter.sortBy} 
-                onValueChange={updateSortBy}
-              >
-                {sortOptions.map((option) => (
-                  <DropdownMenuRadioItem 
-                    key={option.value} 
-                    value={option.value}
-                    className="text-white hover:bg-gray-800 hover:text-ggrave-red cursor-pointer"
-                  >
-                    {option.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </CollapsibleContent>
-      </Collapsible>
-      
-      {/* Time Period - Only show if applicable to the selected sort */}
-      {showTimeFrame && (
-        <Collapsible
-          open={expandedSections.timeFrame}
-          onOpenChange={() => toggleSection('timeFrame')}
-          className="border-b border-gray-800"
+      {/* Time Frame Section */}
+      <div className="mb-4">
+        <button 
+          className="w-full flex justify-between items-center text-white text-sm mb-2"
+          onClick={() => toggleSection('timeFrame')}
         >
-          <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
-            <h4 className="text-white text-sm font-medium flex items-center">
-              <Clock size={16} className="mr-2" />
-              Time Period
-            </h4>
-            {expandedSections.timeFrame ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="p-4 pt-0 space-y-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline"
-                  className="w-full bg-ggrave-black text-white text-sm border border-gray-700 justify-between"
+          <FilterSectionHeader 
+            icon={Clock} 
+            title="TIME PERIOD" 
+            isExpanded={expandedSections.timeFrame} 
+          />
+        </button>
+        
+        {expandedSections.timeFrame && (
+          <div className="space-y-2 mt-3 ml-1">
+            {[
+              { value: 'allTime', label: 'All Time' },
+              { value: 'today', label: 'Last 24 Hours' },
+              { value: 'week', label: 'Past Week' },
+              { value: 'month', label: 'Past Month' },
+              { value: 'quarter', label: 'Past 3 Months' },
+              { value: 'year', label: 'Past Year' }
+            ].map((option) => (
+              <div key={option.value} className="flex items-center">
+                <button
+                  className={`text-sm py-1 w-full text-left ${
+                    filter.timeFrame === option.value 
+                      ? 'text-ggrave-red font-medium' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  onClick={() => handleTimeFrameChange(option.value as FilterState['timeFrame'])}
                 >
-                  {currentTimeFrameOption.label}
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-ggrave-black border-gray-700">
-                <DropdownMenuRadioGroup 
-                  value={filter.timeFrame} 
-                  onValueChange={updateTimeFrame}
-                >
-                  {timeFrameOptions.map((option) => (
-                    <DropdownMenuRadioItem 
-                      key={option.value} 
-                      value={option.value}
-                      className="text-white hover:bg-gray-800 hover:text-ggrave-red cursor-pointer"
-                    >
-                      {option.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-      
-      {/* Genres */}
-      <Collapsible
-        open={expandedSections.genres}
-        onOpenChange={() => toggleSection('genres')}
-        className="border-b border-gray-800"
-      >
-        <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
-          <h4 className="text-white text-sm font-medium">Genres</h4>
-          {expandedSections.genres ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent className="p-4 pt-0 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            {genres.map((genre) => (
-              <label key={genre} className="flex items-center space-x-2 text-sm text-gray-300">
-                <Checkbox 
-                  id={`genre-${genre}`}
-                  checked={filter.genres.includes(genre)}
-                  onCheckedChange={(checked) => updateGenre(genre, checked === true)}
-                  className="border-gray-700 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
-                />
-                <span className={filter.genres.includes(genre) ? "text-ggrave-red" : ""}>
-                  {genre}
-                </span>
-              </label>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-      
-      {/* Platforms */}
-      <Collapsible
-        open={expandedSections.platforms}
-        onOpenChange={() => toggleSection('platforms')}
-        className="border-b border-gray-800"
-      >
-        <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
-          <h4 className="text-white text-sm font-medium">Platforms</h4>
-          {expandedSections.platforms ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent className="p-4 pt-0 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            {platforms.map((platform) => (
-              <label key={platform} className="flex items-center space-x-2 text-sm text-gray-300">
-                <Checkbox 
-                  id={`platform-${platform}`}
-                  checked={filter.platforms.includes(platform)}
-                  onCheckedChange={(checked) => updatePlatform(platform, checked === true)}
-                  className="border-gray-700 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
-                />
-                <span className={filter.platforms.includes(platform) ? "text-ggrave-red" : ""}>
-                  {platform}
-                </span>
-              </label>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-      
-      {/* Price */}
-      <Collapsible
-        open={expandedSections.price}
-        onOpenChange={() => toggleSection('price')}
-        className="border-b border-gray-800"
-      >
-        <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
-          <h4 className="text-white text-sm font-medium">Price</h4>
-          {expandedSections.price ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent className="p-4 pt-0 space-y-4">
-          <RadioGroup 
-            defaultValue="all"
-            value={filter.priceRange[0] === 0 && filter.priceRange[1] === 100 ? "all" : 
-                  filter.priceRange[0] === 0 && filter.priceRange[1] === 0 ? "free" : "paid"}
-            onValueChange={(value) => {
-              if (value === "all") {
-                onFilterChange({
-                  ...filter,
-                  priceRange: [0, 100]
-                });
-              } else if (value === "free") {
-                onFilterChange({
-                  ...filter,
-                  priceRange: [0, 0]
-                });
-              } else {
-                onFilterChange({
-                  ...filter,
-                  priceRange: [0.01, 100]
-                });
-              }
-            }}
-            className="space-y-2"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="all" id="price-all" className="border-gray-700 text-ggrave-red" />
-              <label htmlFor="price-all" className="text-sm text-gray-300">All Prices</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="free" id="price-free" className="border-gray-700 text-ggrave-red" />
-              <label htmlFor="price-free" className="text-sm text-gray-300">Free Only</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="paid" id="price-paid" className="border-gray-700 text-ggrave-red" />
-              <label htmlFor="price-paid" className="text-sm text-gray-300">Paid Only</label>
-            </div>
-          </RadioGroup>
-          
-          {/* Price range slider (only show if "Paid" is selected) */}
-          {filter.priceRange[0] > 0 && (
-            <div className="mt-3">
-              <div className="flex justify-between mb-2">
-                <span className="text-sm text-gray-400">Price Range: ${filter.priceRange[0]} - ${filter.priceRange[1]}</span>
+                  {option.label}
+                </button>
               </div>
-              <input
-                type="range"
-                min="1"
-                max="100"
-                value={filter.priceRange[1]}
-                onChange={(e) => onFilterChange({
-                  ...filter,
-                  priceRange: [0.01, parseInt(e.target.value)]
-                })}
-                className="w-full accent-ggrave-red"
-              />
-            </div>
-          )}
-        </CollapsibleContent>
-      </Collapsible>
+            ))}
+          </div>
+        )}
+      </div>
       
-      {/* Release Status */}
-      <Collapsible
-        open={expandedSections.releaseStatus}
-        onOpenChange={() => toggleSection('releaseStatus')}
-        className="border-b border-gray-800"
-      >
-        <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
-          <h4 className="text-white text-sm font-medium">Release Status</h4>
-          {expandedSections.releaseStatus ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </CollapsibleTrigger>
+      {/* Genres Section */}
+      <div className="mb-4">
+        <button 
+          className="w-full flex justify-between items-center text-white text-sm mb-2"
+          onClick={() => toggleSection('genres')}
+        >
+          <FilterSectionHeader 
+            icon={Filter} 
+            title="GENRES" 
+            isExpanded={expandedSections.genres} 
+          />
+        </button>
         
-        <CollapsibleContent className="p-4 pt-0 space-y-2">
-          {releaseStatuses.map((status) => (
-            <div key={status} className="flex items-center space-x-2">
-              <Checkbox 
-                id={`status-${status}`}
-                checked={filter.releaseStatus.includes(status)}
-                onCheckedChange={(checked) => updateReleaseStatus(status, checked === true)}
-                className="border-gray-700 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
-              />
-              <label 
-                htmlFor={`status-${status}`}
-                className={`text-sm ${filter.releaseStatus.includes(status) ? "text-ggrave-red" : "text-gray-300"}`}
-              >
-                {status}
-              </label>
+        {expandedSections.genres && (
+          <div className="space-y-2 mt-3 ml-1">
+            {availableGenres.map((genre) => (
+              <div key={genre.slug} className="flex items-center justify-between group">
+                <div className="flex items-center">
+                  <Checkbox
+                    id={`genre-${genre.slug}`}
+                    checked={filter.genres.includes(genre.slug as Genre)}
+                    onCheckedChange={(checked) => 
+                      handleGenreChange(genre.slug, checked === true)
+                    }
+                    className="border-gray-600 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
+                  />
+                  <label
+                    htmlFor={`genre-${genre.slug}`}
+                    className="text-sm ml-2 text-gray-300 group-hover:text-white cursor-pointer"
+                  >
+                    {genre.name}
+                  </label>
+                </div>
+                <span className="text-xs text-gray-500">({genre.count})</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Platforms Section */}
+      <div className="mb-4">
+        <button 
+          className="w-full flex justify-between items-center text-white text-sm mb-2"
+          onClick={() => toggleSection('platforms')}
+        >
+          <FilterSectionHeader 
+            icon={Filter} 
+            title="PLATFORMS" 
+            isExpanded={expandedSections.platforms} 
+          />
+        </button>
+        
+        {expandedSections.platforms && (
+          <div className="space-y-2 mt-3 ml-1">
+            {availablePlatforms.map((platform) => (
+              <div key={platform.name} className="flex items-center justify-between group">
+                <div className="flex items-center">
+                  <Checkbox
+                    id={`platform-${platform.name}`}
+                    checked={filter.platforms.includes(platform.name as Platform)}
+                    onCheckedChange={(checked) => 
+                      handlePlatformChange(platform.name, checked === true)
+                    }
+                    className="border-gray-600 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
+                  />
+                  <label
+                    htmlFor={`platform-${platform.name}`}
+                    className="text-sm ml-2 text-gray-300 group-hover:text-white cursor-pointer"
+                  >
+                    {platform.name}
+                  </label>
+                </div>
+                <span className="text-xs text-gray-500">({platform.count})</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Price Range Section */}
+      <div className="mb-4">
+        <button 
+          className="w-full flex justify-between items-center text-white text-sm mb-2"
+          onClick={() => toggleSection('price')}
+        >
+          <FilterSectionHeader 
+            icon={Filter} 
+            title="PRICE" 
+            isExpanded={expandedSections.price} 
+          />
+        </button>
+        
+        {expandedSections.price && (
+          <div className="mt-3 ml-1">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-400">
+                ${filter.priceRange[0]}
+              </div>
+              <div className="text-sm text-gray-400">
+                ${filter.priceRange[1]}
+              </div>
             </div>
-          ))}
-        </CollapsibleContent>
-      </Collapsible>
+            
+            <Slider
+              value={filter.priceRange}
+              min={0}
+              max={100}
+              step={1}
+              onValueChange={handlePriceRangeChange}
+              className="mt-1"
+            />
+            
+            <div className="mt-3 flex items-center justify-between">
+              <button
+                className={`px-3 py-1 text-xs rounded ${
+                  filter.priceRange[0] === 0 && filter.priceRange[1] === 100
+                    ? 'bg-ggrave-red text-white'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+                onClick={() => handlePriceRangeChange([0, 100])}
+              >
+                All
+              </button>
+              
+              <button
+                className={`px-3 py-1 text-xs rounded ${
+                  filter.priceRange[0] === 0 && filter.priceRange[1] === 0
+                    ? 'bg-ggrave-red text-white'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+                onClick={() => handlePriceRangeChange([0, 0])}
+              >
+                Free
+              </button>
+              
+              <button
+                className={`px-3 py-1 text-xs rounded ${
+                  filter.priceRange[0] > 0
+                    ? 'bg-ggrave-red text-white'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+                onClick={() => handlePriceRangeChange([1, 100])}
+              >
+                Paid
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Release Status Section */}
+      <div className="mb-4">
+        <button 
+          className="w-full flex justify-between items-center text-white text-sm mb-2"
+          onClick={() => toggleSection('releaseStatus')}
+        >
+          <FilterSectionHeader 
+            icon={Filter} 
+            title="RELEASE STATUS" 
+            isExpanded={expandedSections.releaseStatus} 
+          />
+        </button>
+        
+        {expandedSections.releaseStatus && (
+          <div className="space-y-2 mt-3 ml-1">
+            {[
+              { value: 'Released', label: 'Released' },
+              { value: 'Early Access', label: 'Early Access' },
+              { value: 'Demo Available', label: 'Demo Available' },
+              { value: 'In Development', label: 'In Development' },
+              { value: 'Concept', label: 'Concept/Idea' }
+            ].map((status) => (
+              <div key={status.value} className="flex items-center group">
+                <Checkbox
+                  id={`status-${status.value}`}
+                  checked={filter.releaseStatus.includes(status.value)}
+                  onCheckedChange={(checked) => 
+                    handleReleaseStatusChange(status.value, checked === true)
+                  }
+                  className="border-gray-600 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
+                />
+                <label
+                  htmlFor={`status-${status.value}`}
+                  className="text-sm ml-2 text-gray-300 group-hover:text-white cursor-pointer"
+                >
+                  {status.label}
+                </label>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Clear All Filters Button */}
+      <button
+        className="w-full mt-4 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded transition-colors"
+        onClick={() => onFilterChange({
+          genres: [],
+          platforms: [],
+          priceRange: [0, 100],
+          releaseStatus: [],
+          searchQuery: '',
+          sortBy: 'trending',
+          timeFrame: 'allTime',
+        })}
+      >
+        Clear All Filters
+      </button>
     </div>
   );
 };

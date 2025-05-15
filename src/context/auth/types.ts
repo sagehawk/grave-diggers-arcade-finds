@@ -11,6 +11,6 @@ export interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   signup: (username: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  updateUserProfile: (data: { bio?: string }) => Promise<boolean>;
+  updateUserProfile: (data: { bio?: string; avatarUrl?: string }) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
 }

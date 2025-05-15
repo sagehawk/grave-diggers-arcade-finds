@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
 import GameGrid from '../components/GameGrid';
@@ -13,9 +13,9 @@ import { Search, Filter, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { fetchGames } from '../utils/supabase-helpers';
 
-// Split this large file into smaller components
-import { featuredGames, allGames } from '../data/gamesData';
+// Import smaller components
 import { GameSearch } from '../components/GameSearch';
 import { MobileFilterButton } from '../components/MobileFilterButton';
 import { WelcomeSection } from '../components/WelcomeSection';
@@ -32,9 +32,39 @@ const Index: React.FC = () => {
     timeFrame: 'allTime',
   });
 
+  const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   // State for search input
   const [searchInput, setSearchInput] = useState('');
   const { toast } = useToast();
+  
+  // Load featured games on component mount
+  useEffect(() => {
+    const loadFeaturedGames = async () => {
+      try {
+        setIsLoading(true);
+        // Get featured games (most liked)
+        const { games } = await fetchGames(1, { 
+          sortBy: 'mostLiked',
+          timeFrame: 'allTime',
+        });
+        
+        setFeaturedGames(games.slice(0, 5)); // Take top 5 for carousel
+      } catch (error) {
+        console.error('Error loading featured games:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load featured games",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadFeaturedGames();
+  }, [toast]);
   
   // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
@@ -56,85 +86,6 @@ const Index: React.FC = () => {
     }
   };
   
-  // Function to filter games based on the current filter state
-  const getFilteredGames = () => {
-    return allGames.filter(game => {
-      // Filter by search query
-      if (filter.searchQuery && !game.title.toLowerCase().includes(filter.searchQuery.toLowerCase())) {
-        return false;
-      }
-      
-      // Filter by genres
-      if (filter.genres.length > 0 && !filter.genres.some(genre => game.genre.includes(genre))) {
-        return false;
-      }
-      
-      // Filter by platforms
-      if (filter.platforms.length > 0 && !filter.platforms.some(platform => game.platforms.includes(platform))) {
-        return false;
-      }
-      
-      // Filter by release status
-      if (filter.releaseStatus.length > 0 && !filter.releaseStatus.includes(game.releaseStatus)) {
-        return false;
-      }
-      
-      // Filter by price
-      const price = typeof game.price === 'number' ? game.price : 0;
-      if (price < filter.priceRange[0] || price > filter.priceRange[1]) {
-        return false;
-      }
-      
-      return true;
-    });
-  };
-  
-  // Function to sort filtered games based on sort criteria
-  const getSortedGames = () => {
-    const filteredGames = getFilteredGames();
-    
-    switch (filter.sortBy) {
-      case 'trending':
-      case 'mostViewed':
-        return [...filteredGames].sort((a, b) => b.views - a.views);
-      case 'mostLiked':
-      case 'highestRated':
-        return [...filteredGames].sort((a, b) => b.likes - a.likes);
-      case 'newest':
-        // Sort by most recently added (assuming ID is sequential)
-        return [...filteredGames].sort((a, b) => parseInt(b.id) - parseInt(a.id));
-      case 'releaseDate':
-        // Sort by release date (newest first)
-        return [...filteredGames].sort((a, b) => 
-          new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
-        );
-      case 'priceAsc':
-        // Sort by price (low to high)
-        return [...filteredGames].sort((a, b) => {
-          const priceA = typeof a.price === 'number' ? a.price : 0;
-          const priceB = typeof b.price === 'number' ? b.price : 0;
-          return priceA - priceB;
-        });
-      case 'priceDesc':
-        // Sort by price (high to low)
-        return [...filteredGames].sort((a, b) => {
-          const priceA = typeof a.price === 'number' ? a.price : 0;
-          const priceB = typeof b.price === 'number' ? b.price : 0;
-          return priceB - priceA;
-        });
-      case 'nameAsc':
-        // Sort alphabetically A-Z
-        return [...filteredGames].sort((a, b) => a.title.localeCompare(b.title));
-      case 'nameDesc':
-        // Sort alphabetically Z-A
-        return [...filteredGames].sort((a, b) => b.title.localeCompare(a.title));
-      default:
-        return filteredGames;
-    }
-  };
-  
-  const displayGames = getSortedGames();
-  
   return (
     <div className="min-h-screen bg-[#111111]">
       <Navbar />
@@ -147,7 +98,11 @@ const Index: React.FC = () => {
             {/* Left Column Area (Wider) */}
             <div className="w-full md:w-2/3">
               {/* Top: Hero Gallery */}
-              <GameCarousel games={featuredGames} title="FEATURED GAMES" />
+              {isLoading ? (
+                <div className="aspect-[16/6] bg-gray-900 animate-pulse rounded-lg"></div>
+              ) : (
+                <GameCarousel games={featuredGames} title="FEATURED GAMES" />
+              )}
               
               {/* Search bar and filter button */}
               <div className="mt-8 mb-4">
@@ -220,15 +175,12 @@ const Index: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-pixel text-white text-lg">
                   {filter.searchQuery ? 'SEARCH RESULTS' : 'GAMES'}
-                  <span className="text-sm text-gray-400 ml-2">
-                    ({displayGames.length} {displayGames.length === 1 ? 'game' : 'games'})
-                  </span>
                 </h2>
               </div>
               
-              {/* Game Grid */}
+              {/* Game Grid - now uses filter prop directly */}
               <GameGrid 
-                games={displayGames} 
+                filter={filter}
                 title="" 
                 viewAllLink={`/games/all`}
               />

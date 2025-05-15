@@ -3,9 +3,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Game } from '../types';
 import GameCard from './GameCard';
 import LoadingIndicator from './LoadingIndicator';
+import { fetchGames } from '../utils/supabase-helpers';
+import { useToast } from '@/hooks/use-toast';
 
 interface GameGridProps {
-  games: Game[];
+  filter: any; // We'll use the filter state from parent component
   title: string;
   viewAllLink?: string;
   className?: string;
@@ -13,46 +15,71 @@ interface GameGridProps {
 }
 
 const GameGrid: React.FC<GameGridProps> = ({ 
-  games, 
+  filter, 
   title, 
   viewAllLink, 
   className = '',
   itemsPerPage = 12
 }) => {
-  const [visibleGames, setVisibleGames] = useState<Game[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [allLoaded, setAllLoaded] = useState(false);
+  const [totalGames, setTotalGames] = useState(0);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  // Function to load more games
-  const loadMoreGames = useCallback(() => {
-    if (loading || allLoaded) return;
+  // Function to load games from Supabase
+  const loadGames = useCallback(async (page: number, isInitial: boolean = false) => {
+    if (loading || (allLoaded && !isInitial)) return;
     
-    setLoading(true);
-    
-    // Simulate loading delay for demo purposes
-    setTimeout(() => {
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const newGames = games.slice(startIndex, endIndex);
+    try {
+      setLoading(true);
       
-      if (newGames.length > 0) {
-        setVisibleGames(prev => [...prev, ...newGames]);
-        setCurrentPage(prev => prev + 1);
+      const { games: fetchedGames, total } = await fetchGames(page, filter);
+      
+      setTotalGames(total);
+      
+      if (isInitial) {
+        setGames(fetchedGames);
+      } else {
+        setGames(prev => [...prev, ...fetchedGames]);
       }
       
       // Check if we've loaded all games
-      if (endIndex >= games.length) {
+      if (fetchedGames.length < itemsPerPage || games.length + fetchedGames.length >= total) {
         setAllLoaded(true);
+      } else {
+        setAllLoaded(false);
       }
       
+    } catch (error) {
+      console.error('Error loading games:', error);
+      toast({
+        title: "Error loading games",
+        description: error instanceof Error ? error.message : "Failed to load games",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-    }, 800); // Simulate network delay
-  }, [currentPage, games, itemsPerPage, loading, allLoaded]);
+      if (isInitial) {
+        setInitialLoading(false);
+      }
+    }
+  }, [filter, loading, allLoaded, itemsPerPage, games.length, toast]);
 
-  // Set up intersection observer
+  // Load more games when scrolling
+  const loadMoreGames = useCallback(() => {
+    if (!loading && !allLoaded) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      loadGames(nextPage);
+    }
+  }, [currentPage, loading, allLoaded, loadGames]);
+
+  // Set up intersection observer for infinite scrolling
   useEffect(() => {
     if (!loadingRef.current) return;
     
@@ -74,29 +101,41 @@ const GameGrid: React.FC<GameGridProps> = ({
     };
   }, [loadMoreGames, loading, allLoaded]);
 
-  // Initial load
+  // Initial load and reload when filters change
   useEffect(() => {
-    // Reset state when games array changes
-    setVisibleGames([]);
+    setGames([]);
     setCurrentPage(1);
     setAllLoaded(false);
-    setLoading(true);
-    
-    // Load initial batch of games
-    const initialGames = games.slice(0, itemsPerPage);
-    setVisibleGames(initialGames);
-    setCurrentPage(2);
-    setAllLoaded(initialGames.length >= games.length);
-    setLoading(false);
-  }, [games, itemsPerPage]);
+    setInitialLoading(true);
+    loadGames(1, true);
+  }, [filter, loadGames]);
 
-  if (games.length === 0) return null;
+  if (initialLoading) {
+    return (
+      <div className={`mb-6 ${className}`}>
+        <div className="flex justify-center py-10">
+          <LoadingIndicator />
+        </div>
+      </div>
+    );
+  }
+  
+  if (games.length === 0 && !loading) {
+    return (
+      <div className={`mb-6 ${className}`}>
+        <div className="bg-gray-900 rounded-md p-8 text-center">
+          <h3 className="text-gray-400 text-lg">No games found for the current filters</h3>
+          <p className="text-gray-500 mt-2">Try adjusting your filters or search criteria</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className={`mb-6 ${className}`}>
       {/* Grid of game cards with aspect ratio adjusted for mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {visibleGames.map((game) => (
+        {games.map((game) => (
           <GameCard key={game.id} game={game} />
         ))}
       </div>

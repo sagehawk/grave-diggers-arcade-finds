@@ -5,6 +5,8 @@ import { Game } from '../types';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Eye, ThumbsUp, MessageSquare } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { incrementGameView } from '@/utils/supabase-helpers';
 
 interface GameCardProps {
   game: Game;
@@ -12,8 +14,22 @@ interface GameCardProps {
 }
 
 const GameCard: React.FC<GameCardProps> = ({ game, className }) => {
+  const handleClick = async () => {
+    // Increment view count when the card is clicked
+    try {
+      await incrementGameView(game.id);
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
+      // Don't show error to user, just log it
+    }
+  };
+
   return (
-    <Link to={`/games/${game.id}`} className={cn("block group", className)}>
+    <Link 
+      to={`/games/${game.id}`} 
+      className={cn("block group", className)}
+      onClick={handleClick}
+    >
       <div className="relative overflow-hidden rounded-md border border-gray-800 bg-gray-900 transition-all duration-300 hover:border-ggrave-red">
         <div className="relative">
           <AspectRatio ratio={16/9} className="w-full h-auto">
@@ -21,6 +37,10 @@ const GameCard: React.FC<GameCardProps> = ({ game, className }) => {
               src={game.thumbnail || 'https://placehold.co/600x400/222/333?text=No+Image'} 
               alt={game.title}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback if image fails to load
+                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/222/333?text=No+Image';
+              }}
             />
           </AspectRatio>
           

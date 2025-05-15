@@ -1,5 +1,5 @@
 
 project_id = "xliqdqaerqaezbnppzdd"
 
-[auth.external.google]
-enabled = true
+[functions.increment-game-view]
+verify_jwt = false

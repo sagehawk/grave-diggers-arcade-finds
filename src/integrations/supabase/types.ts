@@ -9,7 +9,266 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          game_id: string
+          id: string
+          parent_comment_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          game_id: string
+          id?: string
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_genres: {
+        Row: {
+          game_id: string
+          genre_id: number
+        }
+        Insert: {
+          game_id: string
+          genre_id: number
+        }
+        Update: {
+          game_id?: string
+          genre_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_genres_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "genres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_likes: {
+        Row: {
+          created_at: string
+          game_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_likes_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_tags: {
+        Row: {
+          game_id: string
+          tag_id: number
+        }
+        Insert: {
+          game_id: string
+          tag_id: number
+        }
+        Update: {
+          game_id?: string
+          tag_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_tags_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          description: string
+          developer_name: string | null
+          gallery_image_urls: string[] | null
+          id: string
+          is_free: boolean | null
+          like_count: number | null
+          platform_tags: string[] | null
+          price_text: string | null
+          published_at: string | null
+          release_date: string | null
+          status: string
+          submitter_user_id: string | null
+          thumbnail_url: string | null
+          title: string
+          trailer_url: string | null
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          description: string
+          developer_name?: string | null
+          gallery_image_urls?: string[] | null
+          id?: string
+          is_free?: boolean | null
+          like_count?: number | null
+          platform_tags?: string[] | null
+          price_text?: string | null
+          published_at?: string | null
+          release_date?: string | null
+          status?: string
+          submitter_user_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          trailer_url?: string | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string
+          developer_name?: string | null
+          gallery_image_urls?: string[] | null
+          id?: string
+          is_free?: boolean | null
+          like_count?: number | null
+          platform_tags?: string[] | null
+          price_text?: string | null
+          published_at?: string | null
+          release_date?: string | null
+          status?: string
+          submitter_user_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          trailer_url?: string | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      genres: {
+        Row: {
+          id: number
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          id: number
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
