@@ -1,4 +1,3 @@
-
 // Game data structure
 export interface Game {
   id: string;
@@ -88,6 +87,6 @@ export interface FilterState {
   priceRange: [number, number];
   releaseStatus: string[];
   searchQuery: string;
-  sortBy: 'trending' | 'mostViewed' | 'mostLiked' | 'highestRated' | 'newest' | 'releaseDate' | 'priceAsc' | 'priceDesc';
-  timeFrame: 'today' | 'week' | 'month' | 'quarter' | 'allTime';
+  sortBy: 'relevance' | 'trending' | 'mostViewed' | 'highestRated' | 'releaseDate' | 'newest' | 'priceAsc' | 'priceDesc' | 'nameAsc' | 'nameDesc' | 'mostLiked';
+  timeFrame: 'allTime' | 'today' | 'week' | 'month' | 'quarter' | 'year';
 }

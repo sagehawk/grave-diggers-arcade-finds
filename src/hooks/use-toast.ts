@@ -4,4 +4,3 @@
 
 // Export the toast hooks from our implementation
 export { useToast, toast } from "./use-toast.tsx";
-

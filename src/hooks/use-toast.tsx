@@ -4,20 +4,24 @@ import {
   Toast,
   ToastClose,
   ToastDescription,
-  ToastProvider,
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
 import { useToast as useToastPrimitive } from "@/components/ui/use-toast"
 
+// Create a context for the toast functionality
 const ToastContext = React.createContext<{
   toast: (props: any) => void
+  toasts: any[]
 }>({
   toast: () => {},
+  toasts: []
 })
 
+// Create a custom toast provider
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const { toast: primitive, ...others } = useToastPrimitive()
+  // Rename imported component to ToastProviderPrimitive to avoid naming conflicts
+  const { toast: primitive, toasts } = useToastPrimitive()
 
   const toast = React.useCallback(
     (props: any) => {
@@ -27,23 +31,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <ToastContext.Provider value={{ toast }}>
-      <ToastProvider>
-        {children}
-        <ToastViewport />
-      </ToastProvider>
+    <ToastContext.Provider value={{ toast, toasts }}>
+      {children}
     </ToastContext.Provider>
   )
 }
 
+// Hook for components to use toast functionality
 export function useToast() {
-  const { toast } = React.useContext(ToastContext)
-  return { toast }
+  const context = React.useContext(ToastContext)
+  if (!context) {
+    throw new Error("useToast must be used within a ToastProvider")
+  }
+  return context
 }
 
+// Direct toast function for non-component usage
 export const toast = (props: any) => {
   // This is a mock implementation for direct imports
-  // In reality, we would need a toast manager to handle this
   const toastFn = (window as any).__TOAST_FN
   if (toastFn) {
     toastFn(props)

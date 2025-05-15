@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { FilterState, Genre, Platform } from '../types';
 import { 
-  Filter, ChevronDown, ChevronUp, X, SortAscending, Clock
+  Filter, ChevronDown, ChevronUp, X, 
+  SortAsc, Clock
 } from 'lucide-react';
 import { 
   Collapsible, 
@@ -20,7 +20,10 @@ import {
   DropdownMenuRadioItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { toast } from '@/hooks/use-toast.tsx';
+import { toast } from '@/hooks/use-toast';
+
+// Extract reusable components to reduce file size
+import FilterSectionHeader from './filter/FilterSectionHeader';
 
 interface FilterPanelProps {
   filter: FilterState;
@@ -35,7 +38,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     sort: true,
-    timeframe: true,
+    timeFrame: true,
     genres: true,
     platforms: true,
     price: true,
@@ -186,7 +189,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       >
         <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
           <h4 className="text-white text-sm font-medium flex items-center">
-            <SortAscending size={16} className="mr-2" />
+            <SortAsc size={16} className="mr-2" />
             Sort By
           </h4>
           {expandedSections.sort ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -226,8 +229,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       {/* Time Period - Only show if applicable to the selected sort */}
       {showTimeFrame && (
         <Collapsible
-          open={expandedSections.timeframe}
-          onOpenChange={() => toggleSection('timeframe')}
+          open={expandedSections.timeFrame}
+          onOpenChange={() => toggleSection('timeFrame')}
           className="border-b border-gray-800"
         >
           <CollapsibleTrigger className="w-full p-4 flex justify-between items-center cursor-pointer hover:bg-black">
@@ -235,7 +238,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               <Clock size={16} className="mr-2" />
               Time Period
             </h4>
-            {expandedSections.timeframe ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {expandedSections.timeFrame ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </CollapsibleTrigger>
           
           <CollapsibleContent className="p-4 pt-0 space-y-2">

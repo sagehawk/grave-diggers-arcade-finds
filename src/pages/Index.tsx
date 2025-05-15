@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
@@ -11,9 +12,16 @@ import { Separator } from '@/components/ui/separator';
 import { Search, Filter, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+
+// Split this large file into smaller components
+import { featuredGames, allGames } from '../data/gamesData';
+import { GameSearch } from '../components/GameSearch';
+import { MobileFilterButton } from '../components/MobileFilterButton';
+import { WelcomeSection } from '../components/WelcomeSection';
+import { Footer } from '../components/Footer';
 
 const Index: React.FC = () => {
-  // Sample data for demonstration
   const [filter, setFilter] = useState<FilterState>({
     genres: [],
     platforms: [],
@@ -26,6 +34,7 @@ const Index: React.FC = () => {
 
   // State for search input
   const [searchInput, setSearchInput] = useState('');
+  const { toast } = useToast();
   
   // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
@@ -46,227 +55,6 @@ const Index: React.FC = () => {
       });
     }
   };
-  
-  // Sample featured games data
-  const featuredGames: Game[] = [
-    {
-      id: '1',
-      title: 'Pixel Dungeon Crawler',
-      developer: 'RetroStudio Games',
-      thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f',
-      banner: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f',
-      description: 'Dive into this exciting retro-inspired dungeon crawler with procedurally generated levels, challenging boss fights and hundreds of unique items to discover.',
-      genre: ['RPG', 'Roguelike', 'Pixel Art'],
-      platforms: ['Windows', 'Mac', 'Linux'],
-      price: 9.99,
-      releaseStatus: 'Released',
-      views: 12500,
-      likes: 1840,
-      comments: 342,
-      releaseDate: '2023-05-15',
-    },
-    {
-      id: '2',
-      title: 'Neon Drift Racer',
-      developer: 'SpeedForce Interactive',
-      thumbnail: 'https://images.unsplash.com/photo-1511512578047-dfb367046420',
-      banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420',
-      description: 'Race through neon-lit cyberpunk cities in this high-octane arcade racing game featuring an original synthwave soundtrack and intuitive drift mechanics.',
-      genre: ['Racing', 'Arcade', 'Cyberpunk'],
-      platforms: ['Windows', 'PlayStation', 'Xbox'],
-      price: 19.99,
-      releaseStatus: 'Early Access',
-      views: 8720,
-      likes: 1320,
-      comments: 215,
-      releaseDate: '2023-08-22',
-    },
-    {
-      id: '3',
-      title: 'Starbound Explorers',
-      developer: 'Cosmic Whale Games',
-      thumbnail: 'https://images.unsplash.com/photo-1518218119019-7a0b341f6e4e',
-      banner: 'https://images.unsplash.com/photo-1518218119019-7a0b341f6e4e',
-      description: 'Embark on an epic space adventure across procedurally generated galaxies. Build your ship, recruit a crew, and discover the mysteries of the universe.',
-      genre: ['Adventure', 'Simulation', 'Sci-Fi'],
-      platforms: ['Windows', 'Mac'],
-      price: 'Free',
-      releaseStatus: 'Demo Available',
-      views: 15600,
-      likes: 2100,
-      comments: 489,
-      releaseDate: '2023-03-10',
-    }
-  ];
-
-  // Games data
-  const allGames: Game[] = [
-    {
-      id: '4',
-      title: 'Forest Guardian',
-      developer: 'Nature Interactive',
-      thumbnail: 'https://images.unsplash.com/photo-1511512578047-dfb367046420',
-      description: 'Protect the mystical forest as an ancient spirit guardian. Use your powers to defeat corrupted creatures and restore balance to nature.',
-      genre: ['Action', 'Adventure'],
-      platforms: ['Windows', 'Mac', 'Switch'],
-      price: 14.99,
-      releaseStatus: 'Released',
-      views: 5300,
-      likes: 980,
-      comments: 152,
-      releaseDate: '2023-07-12',
-    },
-    {
-      id: '5',
-      title: 'Cyber Blade',
-      developer: 'Neon Samurai Studios',
-      thumbnail: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f',
-      description: 'A fast-paced action platformer with precise sword combat mechanics set in a dystopian future.',
-      genre: ['Action', 'Platformer'],
-      platforms: ['Windows', 'PlayStation'],
-      price: 12.99,
-      releaseStatus: 'Released',
-      views: 7100,
-      likes: 1250,
-      comments: 203,
-      releaseDate: '2023-06-28',
-    },
-    {
-      id: '6',
-      title: 'Puzzle Dimension',
-      developer: 'Mind Benders',
-      thumbnail: 'https://images.unsplash.com/photo-1489850846882-35ef10a4b480',
-      description: 'Bend your mind with challenging 4D puzzles that will test your spatial awareness and logical thinking.',
-      genre: ['Puzzle', 'Strategy'],
-      platforms: ['Windows', 'Mac', 'Linux', 'Mobile'],
-      price: 'Free',
-      releaseStatus: 'Released',
-      views: 8900,
-      likes: 1670,
-      comments: 315,
-      releaseDate: '2023-04-05',
-    },
-    {
-      id: '7',
-      title: 'Ghost Hunter',
-      developer: 'Paranormal Games',
-      thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23',
-      description: 'A tense horror game where you hunt ghosts and other supernatural entities using specialized equipment.',
-      genre: ['Horror', 'Adventure'],
-      platforms: ['Windows', 'Xbox'],
-      price: 19.99,
-      releaseStatus: 'Early Access',
-      views: 4200,
-      likes: 890,
-      comments: 145,
-      releaseDate: '2023-09-13',
-    },
-    {
-      id: '8',
-      title: 'Pixel Farm',
-      developer: 'Harvest Moon Studios',
-      thumbnail: 'https://images.unsplash.com/photo-1506457592540-b872c7c1d615',
-      description: 'Build and manage your own pixel art farm. Plant crops, raise animals, and become part of a friendly community.',
-      genre: ['Simulation', 'Casual'],
-      platforms: ['Windows', 'Mac', 'Mobile', 'Switch'],
-      price: 9.99,
-      releaseStatus: 'Released',
-      views: 6500,
-      likes: 1420,
-      comments: 267,
-      releaseDate: '2023-02-20',
-    },
-    {
-      id: '9',
-      title: 'Space Trader',
-      developer: 'Galaxy Games',
-      thumbnail: 'https://images.unsplash.com/photo-1581822261290-991b38693d1b',
-      description: 'Trade goods across the galaxy, upgrade your ship, and become the richest merchant in space.',
-      genre: ['Strategy', 'Simulation'],
-      platforms: ['Windows', 'Mac'],
-      price: 15.99,
-      releaseStatus: 'Released',
-      views: 1200,
-      likes: 340,
-      comments: 78,
-      releaseDate: '2023-10-05',
-    },
-    {
-      id: '10',
-      title: 'Medieval Kingdom',
-      developer: 'History Interactive',
-      thumbnail: 'https://images.unsplash.com/photo-1519987856251-95bffaac638c',
-      description: 'Rule your own medieval kingdom. Make tough decisions, wage wars, and leave your mark on history.',
-      genre: ['Strategy', 'Simulation'],
-      platforms: ['Windows', 'Mac', 'Linux'],
-      price: 24.99,
-      releaseStatus: 'Released',
-      views: 980,
-      likes: 210,
-      comments: 45,
-      releaseDate: '2023-10-12',
-    },
-    {
-      id: '11',
-      title: 'Ninja Warrior',
-      developer: 'Shadow Games',
-      thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e',
-      description: 'Master the way of the ninja in this challenging action platformer with precise controls.',
-      genre: ['Action', 'Platformer'],
-      platforms: ['Windows', 'PlayStation', 'Xbox', 'Switch'],
-      price: 19.99,
-      releaseStatus: 'In Development',
-      views: 750,
-      likes: 180,
-      comments: 32,
-      releaseDate: '2023-11-20',
-    },
-    {
-      id: '12',
-      title: 'Dungeon Keeper',
-      developer: 'Dark Magic Studios',
-      thumbnail: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8',
-      description: 'Build and defend your dungeon against heroes trying to steal your treasure.',
-      genre: ['Strategy', 'Simulation'],
-      platforms: ['Windows'],
-      price: 12.99,
-      releaseStatus: 'Early Access',
-      views: 630,
-      likes: 140,
-      comments: 28,
-      releaseDate: '2023-10-30',
-    },
-    {
-      id: '13',
-      title: 'Galactic Explorer',
-      developer: 'Star Games',
-      thumbnail: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5',
-      description: 'Explore the vast galaxy and discover new planets.',
-      genre: ['Adventure', 'Sci-Fi'],
-      platforms: ['Windows'],
-      price: 19.99,
-      releaseStatus: 'Updated',
-      views: 3500,
-      likes: 720,
-      comments: 135,
-      releaseDate: '2023-09-20',
-    },
-    {
-      id: '14',
-      title: 'Zombie Outbreak',
-      developer: 'Horror Studios',
-      thumbnail: 'https://images.unsplash.com/photo-1559582930-bb01987cf4dd',
-      description: 'Survive in a world infested with zombies.',
-      genre: ['Horror', 'Survival'],
-      platforms: ['Windows', 'PlayStation'],
-      price: 24.99,
-      releaseStatus: 'Updated',
-      views: 4200,
-      likes: 850,
-      comments: 192,
-      releaseDate: '2023-08-15',
-    }
-  ];
   
   // Function to filter games based on the current filter state
   const getFilteredGames = () => {
