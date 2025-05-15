@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import GameCarousel from '../components/GameCarousel';
 import GameGrid from '../components/GameGrid';
-import CategoryFilters from '../components/CategoryFilters';
 import CommunityBuzzSection from '../components/CommunityBuzzSection';
-import FilterSidebar from '../components/FilterSidebar';
+import FilterPanel from '../components/FilterPanel';
+import ActiveFilters from '../components/ActiveFilters';
 import { FilterState, Game } from '../types';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Flame, Star, ArrowUp, Filter, X } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Input } from '@/components/ui/input';
 
 const Index: React.FC = () => {
   // Sample data for demonstration
@@ -24,8 +24,28 @@ const Index: React.FC = () => {
     timeFrame: 'allTime',
   });
 
-  // Active tab state
-  const [activeTab, setActiveTab] = useState("ripe");
+  // State for search input
+  const [searchInput, setSearchInput] = useState('');
+  
+  // Handle search submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFilter({
+      ...filter,
+      searchQuery: searchInput
+    });
+  };
+
+  // Handle search input clearing
+  const clearSearch = () => {
+    setSearchInput('');
+    if (filter.searchQuery) {
+      setFilter({
+        ...filter,
+        searchQuery: ''
+      });
+    }
+  };
   
   // Sample featured games data
   const featuredGames: Game[] = [
@@ -79,8 +99,8 @@ const Index: React.FC = () => {
     }
   ];
 
-  // Tabs content data
-  const ripeGames: Game[] = [
+  // Games data
+  const allGames: Game[] = [
     {
       id: '4',
       title: 'Forest Guardian',
@@ -155,10 +175,7 @@ const Index: React.FC = () => {
       likes: 1420,
       comments: 267,
       releaseDate: '2023-02-20',
-    }
-  ];
-
-  const newGames: Game[] = [
+    },
     {
       id: '9',
       title: 'Space Trader',
@@ -218,10 +235,7 @@ const Index: React.FC = () => {
       likes: 140,
       comments: 28,
       releaseDate: '2023-10-30',
-    }
-  ];
-  
-  const updatedGames: Game[] = [
+    },
     {
       id: '13',
       title: 'Galactic Explorer',
@@ -254,15 +268,84 @@ const Index: React.FC = () => {
     }
   ];
   
-  // Get the right games based on active tab
-  const getTabGames = () => {
-    switch (activeTab) {
-      case "ripe": return ripeGames;
-      case "new": return newGames;
-      case "updated": return updatedGames;
-      default: return ripeGames;
+  // Function to filter games based on the current filter state
+  const getFilteredGames = () => {
+    return allGames.filter(game => {
+      // Filter by search query
+      if (filter.searchQuery && !game.title.toLowerCase().includes(filter.searchQuery.toLowerCase())) {
+        return false;
+      }
+      
+      // Filter by genres
+      if (filter.genres.length > 0 && !filter.genres.some(genre => game.genre.includes(genre))) {
+        return false;
+      }
+      
+      // Filter by platforms
+      if (filter.platforms.length > 0 && !filter.platforms.some(platform => game.platforms.includes(platform))) {
+        return false;
+      }
+      
+      // Filter by release status
+      if (filter.releaseStatus.length > 0 && !filter.releaseStatus.includes(game.releaseStatus)) {
+        return false;
+      }
+      
+      // Filter by price
+      const price = typeof game.price === 'number' ? game.price : 0;
+      if (price < filter.priceRange[0] || price > filter.priceRange[1]) {
+        return false;
+      }
+      
+      return true;
+    });
+  };
+  
+  // Function to sort filtered games based on sort criteria
+  const getSortedGames = () => {
+    const filteredGames = getFilteredGames();
+    
+    switch (filter.sortBy) {
+      case 'trending':
+      case 'mostViewed':
+        return [...filteredGames].sort((a, b) => b.views - a.views);
+      case 'mostLiked':
+      case 'highestRated':
+        return [...filteredGames].sort((a, b) => b.likes - a.likes);
+      case 'newest':
+        // Sort by most recently added (assuming ID is sequential)
+        return [...filteredGames].sort((a, b) => parseInt(b.id) - parseInt(a.id));
+      case 'releaseDate':
+        // Sort by release date (newest first)
+        return [...filteredGames].sort((a, b) => 
+          new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
+        );
+      case 'priceAsc':
+        // Sort by price (low to high)
+        return [...filteredGames].sort((a, b) => {
+          const priceA = typeof a.price === 'number' ? a.price : 0;
+          const priceB = typeof b.price === 'number' ? b.price : 0;
+          return priceA - priceB;
+        });
+      case 'priceDesc':
+        // Sort by price (high to low)
+        return [...filteredGames].sort((a, b) => {
+          const priceA = typeof a.price === 'number' ? a.price : 0;
+          const priceB = typeof b.price === 'number' ? b.price : 0;
+          return priceB - priceA;
+        });
+      case 'nameAsc':
+        // Sort alphabetically A-Z
+        return [...filteredGames].sort((a, b) => a.title.localeCompare(b.title));
+      case 'nameDesc':
+        // Sort alphabetically Z-A
+        return [...filteredGames].sort((a, b) => b.title.localeCompare(a.title));
+      default:
+        return filteredGames;
     }
   };
+  
+  const displayGames = getSortedGames();
   
   return (
     <div className="min-h-screen bg-[#111111]">
@@ -278,105 +361,94 @@ const Index: React.FC = () => {
               {/* Top: Hero Gallery */}
               <GameCarousel games={featuredGames} title="FEATURED GAMES" />
               
-              {/* Middle: Tabs section - Full width with filter button for mobile */}
-              <div className="flex items-center justify-between mb-6 mt-8">
-                <Tabs 
-                  defaultValue="ripe" 
-                  className="flex-1"
-                  onValueChange={(value) => setActiveTab(value)}
-                >
-                  <TabsList className="bg-[#181818] border border-gray-700">
-                    <TabsTrigger 
-                      value="ripe" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1 transition-colors"
-                    >
-                      <Flame size={16} /> Ripe
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="new" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1 transition-colors"
-                    >
-                      <Star size={16} /> New
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="updated" 
-                      className="data-[state=active]:bg-ggrave-red data-[state=active]:text-white flex items-center gap-1 transition-colors"
-                    >
-                      <ArrowUp size={16} /> Updated
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-                
-                {/* Mobile filter button */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      className="ml-2 md:hidden bg-[#181818] border-gray-700 hover:bg-[#222222] transition-colors"
-                    >
-                      <Filter size={16} className="mr-1" /> Filters
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[85vw] sm:w-[350px] p-0 bg-ggrave-black border-gray-800">
-                    <div className="p-4 flex justify-between items-center border-b border-gray-800">
-                      <h3 className="text-white text-sm font-medium">Filters</h3>
-                      <SheetClose asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-800 transition-colors">
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </SheetClose>
-                    </div>
-                    <div className="p-4 overflow-y-auto h-full">
-                    {/* Welcome Section */}
-                      <div className="bg-[#181818] border border-gray-800 p-4">
-                        <h3 className="font-pixel text-white text-sm mb-3">Welcome</h3>
-                        <Separator className="mb-3 bg-gray-700" />
+              {/* Search bar and filter button */}
+              <div className="mt-8 mb-4">
+                <form onSubmit={handleSearch} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input 
+                      type="text"
+                      placeholder="Search games..."
+                      className="w-full pl-10 pr-10 py-2 bg-ggrave-darkgray border-gray-700 text-white"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                    />
+                    <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                    {searchInput && (
+                      <button 
+                        type="button"
+                        className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
+                        onClick={clearSearch}
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
+                  <Button type="submit" variant="default">
+                    Search
+                  </Button>
+                  
+                  {/* Mobile filter button */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="icon"
+                        className="md:hidden bg-[#181818] border-gray-700 hover:bg-[#222222] transition-colors"
+                      >
+                        <Filter size={18} />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[85vw] sm:w-[350px] p-0 bg-ggrave-black border-gray-800">
+                      <div className="p-4 flex justify-between items-center border-b border-gray-800">
+                        <h3 className="text-white text-sm font-medium">Filters</h3>
+                        <SheetClose asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-800 transition-colors">
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </SheetClose>
+                      </div>
+                      <div className="p-4 overflow-y-auto h-full">
+                        {/* Filter Panel for mobile */}
+                        <FilterPanel filter={filter} onFilterChange={setFilter} />
                         
-                        <p className="text-white text-base">
-                          Welcome to GamerGrave!<br /><br />
-                        </p>
-                        <p className="text-white text-base">
-                          Discord:<br />
-                          <a
-                            href="https://discord.gg/QJR7JeNxzc" 
-                            className="text-red-500 hover:text-red-400" // Added hover for better UX
-                            rel="noopener noreferrer" // Good for security and performance
-                            target="_blank" // Opens in a new tab
-                          >
-                            https://discord.gg/QJR7JeNxzc
-                          </a>
-                        </p>
+                        {/* Community Buzz Section for mobile */}
+                        <div className="mt-6 md:hidden">
+                          <CommunityBuzzSection />
+                        </div>
                       </div>
-
-                      {/* Filter Sidebar */}
-                      <FilterSidebar filter={filter} onFilterChange={setFilter} />
-                      
-                      {/* Category Filters */}
-                      <div className="mt-4">
-                        <CategoryFilters filter={filter} onFilterChange={setFilter} />
-                      </div>
-                      
-                      {/* Community Buzz Section for mobile */}
-                      <div className="mt-6 md:hidden">
-                        <CommunityBuzzSection />
-                      </div>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                    </SheetContent>
+                  </Sheet>
+                </form>
               </div>
               
-              {/* Bottom: Game Grid */}
+              {/* Active Filters */}
+              <ActiveFilters 
+                filter={filter} 
+                onFilterChange={setFilter} 
+                className="mb-4" 
+              />
+              
+              {/* Game Grid Title with result count */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-pixel text-white text-lg">
+                  {filter.searchQuery ? 'SEARCH RESULTS' : 'GAMES'}
+                  <span className="text-sm text-gray-400 ml-2">
+                    ({displayGames.length} {displayGames.length === 1 ? 'game' : 'games'})
+                  </span>
+                </h2>
+              </div>
+              
+              {/* Game Grid */}
               <GameGrid 
-                games={getTabGames()} 
-                title={activeTab.toUpperCase()} 
-                viewAllLink={`/games/${activeTab}`}
+                games={displayGames} 
+                title="" 
+                viewAllLink={`/games/all`}
               />
             </div>
             
             {/* Right Column Area (Narrower) - The continuous sidebar */}
             <div className="w-full md:w-1/3 space-y-6 hidden md:block">
-            {/* Welcome Section */}
+              {/* Welcome Section */}
               <div className="bg-[#181818] border border-gray-800 p-4">
                 <h3 className="font-pixel text-white text-sm mb-3">Welcome</h3>
                 <Separator className="mb-3 bg-gray-700" />
@@ -388,19 +460,17 @@ const Index: React.FC = () => {
                   Discord:<br />
                   <a
                     href="https://discord.gg/QJR7JeNxzc" 
-                    className="text-red-500 hover:text-red-400" // Added hover for better UX
-                    rel="noopener noreferrer" // Good for security and performance
-                    target="_blank" // Opens in a new tab
+                    className="text-red-500 hover:text-red-400"
+                    rel="noopener noreferrer"
+                    target="_blank"
                   >
                     https://discord.gg/QJR7JeNxzc
                   </a>
                 </p>
               </div>
               
-              {/* Category Filters */}
-              <div className="hover:border-gray-700 transition-all">
-                <CategoryFilters filter={filter} onFilterChange={setFilter} />
-              </div>
+              {/* Filter Panel */}
+              <FilterPanel filter={filter} onFilterChange={setFilter} />
               
               {/* Community Buzz Section */}
               <CommunityBuzzSection />
