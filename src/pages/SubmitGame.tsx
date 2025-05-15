@@ -18,7 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import Navbar from '../components/Navbar';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { Genre, Platform } from '../types';
 import { validateFileSize, optimizeImage, optimizeMultipleImages } from '../utils/imageOptimization';
 import { Loader2 } from 'lucide-react';
@@ -277,9 +277,10 @@ const SubmitGame: React.FC = () => {
                 rules={{ required: "Game title is required" }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Game Title</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-title">Game Title</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-title"
                         placeholder="Enter your game title" 
                         className="bg-gray-800 border-gray-700 text-white"
                         {...field} 
@@ -299,9 +300,10 @@ const SubmitGame: React.FC = () => {
                 name="tagline"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Tagline</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-tagline">Tagline</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-tagline"
                         placeholder="A short catchy slogan for your game" 
                         className="bg-gray-800 border-gray-700 text-white"
                         maxLength={150}
@@ -323,9 +325,10 @@ const SubmitGame: React.FC = () => {
                 rules={{ required: "Game description is required" }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Full Description</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-description">Full Description</FormLabel>
                     <FormControl>
                       <Textarea 
+                        id="game-description"
                         placeholder="Describe your game in detail..." 
                         className="min-h-[150px] bg-gray-800 border-gray-700 text-white"
                         {...field} 
@@ -346,9 +349,11 @@ const SubmitGame: React.FC = () => {
                 rules={{ required: "Game thumbnail is required" }}
                 render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Main Thumbnail</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-thumbnail">Main Thumbnail</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-thumbnail"
+                        name="game-thumbnail"
                         type="file" 
                         className="bg-gray-800 border-gray-700 text-white"
                         accept="image/jpeg,image/png,image/webp" 
@@ -373,9 +378,11 @@ const SubmitGame: React.FC = () => {
                 name="galleryImages"
                 render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Gallery Images</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-gallery">Gallery Images</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-gallery"
+                        name="game-gallery"
                         type="file" 
                         className="bg-gray-800 border-gray-700 text-white"
                         accept="image/jpeg,image/png,image/webp" 
@@ -401,9 +408,10 @@ const SubmitGame: React.FC = () => {
                 name="trailerUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Trailer Link</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-trailer">Trailer Link</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-trailer"
                         placeholder="https://www.youtube.com/watch?v=..." 
                         className="bg-gray-800 border-gray-700 text-white"
                         {...field} 
@@ -443,6 +451,8 @@ const SubmitGame: React.FC = () => {
                               >
                                 <FormControl>
                                   <Checkbox
+                                    id={`genre-${genre.toLowerCase()}`}
+                                    name={`genre-${genre.toLowerCase()}`}
                                     checked={field.value?.includes(genre)}
                                     onCheckedChange={(checked) => {
                                       return checked
@@ -455,7 +465,7 @@ const SubmitGame: React.FC = () => {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="text-white">
+                                <FormLabel className="text-white" htmlFor={`genre-${genre.toLowerCase()}`}>
                                   {genre}
                                 </FormLabel>
                               </FormItem>
@@ -475,9 +485,10 @@ const SubmitGame: React.FC = () => {
                 name="customTags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Custom Tags</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-tags">Custom Tags</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-tags"
                         placeholder="pixel art, difficult, co-op" 
                         className="bg-gray-800 border-gray-700 text-white"
                         {...field} 
@@ -497,13 +508,13 @@ const SubmitGame: React.FC = () => {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Game Status</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-status">Game Status</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                        <SelectTrigger id="game-status" className="bg-gray-800 border-gray-700 text-white">
                           <SelectValue placeholder="Select game status" />
                         </SelectTrigger>
                       </FormControl>
@@ -548,6 +559,8 @@ const SubmitGame: React.FC = () => {
                               >
                                 <FormControl>
                                   <Checkbox
+                                    id={`platform-${platform.toLowerCase()}`}
+                                    name={`platform-${platform.toLowerCase()}`}
                                     checked={field.value?.includes(platform)}
                                     onCheckedChange={(checked) => {
                                       return checked
@@ -560,7 +573,7 @@ const SubmitGame: React.FC = () => {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="text-white">
+                                <FormLabel className="text-white" htmlFor={`platform-${platform.toLowerCase()}`}>
                                   {platform}
                                 </FormLabel>
                               </FormItem>
@@ -580,9 +593,10 @@ const SubmitGame: React.FC = () => {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Price</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-price">Price</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-price"
                         placeholder="Free, $9.99, TBD" 
                         className="bg-gray-800 border-gray-700 text-white"
                         {...field} 
@@ -602,9 +616,10 @@ const SubmitGame: React.FC = () => {
                 name="storeLink"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Store/Download Link</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-store-link">Store/Download Link</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-store-link"
                         placeholder="https://store.steampowered.com/..." 
                         className="bg-gray-800 border-gray-700 text-white"
                         {...field} 
@@ -624,9 +639,10 @@ const SubmitGame: React.FC = () => {
                 name="developerLink"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Developer Website</FormLabel>
+                    <FormLabel className="text-white" htmlFor="game-dev-link">Developer Website</FormLabel>
                     <FormControl>
                       <Input 
+                        id="game-dev-link"
                         placeholder="https://yourstudio.com" 
                         className="bg-gray-800 border-gray-700 text-white"
                         {...field} 

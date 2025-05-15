@@ -1,13 +1,11 @@
 
-import type { Config } from "tailwindcss";
+import type { Config } from "tailwindcss"
+import { keyframes } from "tailwindcss-animate"
 
-const config: Config = {
+const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -15,25 +13,20 @@ const config: Config = {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1440px",
       },
     },
     extend: {
-      fontFamily: {
-        pixel: ['"Press Start 2P"', 'cursive'],
-        sans: ['Inter', 'sans-serif'],
-      },
       colors: {
-        ggrave: {
-          black: '#151515',
-          darkgray: '#1e1e1e',
-          red: '#E30611',
-        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        'ggrave-black': '#111111',
+        'ggrave-darkgray': '#1A1A1A',
+        'ggrave-lightgray': '#333333',
+        'ggrave-red': '#ff3e3e',
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -70,48 +63,26 @@ const config: Config = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
+          from: { height: 0 },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          to: { height: 0 },
         },
-        flicker: {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.8' },
-        },
-        "spin-slow": {
-          "0%": { transform: "rotate(0deg)" },
-          "100%": { transform: "rotate(360deg)" },
-        },
-        "pulse-glow": {
-          "0%, 100%": { filter: "drop-shadow(0 0 2px #E30611)" },
-          "50%": { filter: "drop-shadow(0 0 8px #E30611)" },
-        },
-        "wobble": {
-          "0%, 100%": { transform: "rotate(0deg)" },
-          "25%": { transform: "rotate(-5deg)" },
-          "75%": { transform: "rotate(5deg)" },
-        },
-        "coin-flip": {
-          "0%": { transform: "rotateY(0deg)" },
-          "50%": { transform: "rotateY(180deg)" },
-          "100%": { transform: "rotateY(360deg)" },
-        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "flicker": "flicker 2s linear infinite",
-        "spin-slow": "spin-slow 3s linear infinite",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
-        "wobble": "wobble 2s ease-in-out infinite",
-        "coin-flip": "coin-flip 2s ease-in-out infinite",
+        "spin-slow": "spin 3s linear infinite",
       },
+      fontFamily: {
+        'pixel': ['Press Start 2P', 'cursive'],
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],
-};
+} satisfies Config
 
-export default config;
+export default config
+

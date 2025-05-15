@@ -94,14 +94,14 @@ const GameGrid: React.FC<GameGridProps> = ({
   
   return (
     <div className={`mb-6 ${className}`}>
-      {/* Removed the redundant title here */}
-      
+      {/* Grid of game cards with aspect ratio adjusted for mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {visibleGames.map((game) => (
           <GameCard key={game.id} game={game} />
         ))}
       </div>
       
+      {/* Loading indicator */}
       {!allLoaded && (
         <div ref={loadingRef} className="pt-4">
           {loading && <LoadingIndicator />}

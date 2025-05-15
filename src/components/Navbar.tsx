@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useIsMobile } from '../hooks/use-mobile';
 
 const Navbar: React.FC = () => {
   const [searchFocused, setSearchFocused] = useState(false);
@@ -22,6 +23,7 @@ const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     logout();
@@ -52,19 +54,29 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <img 
-                src="https://i.imgur.com/ItKyOPt.jpeg" 
-                alt="GamerGrave Logo" 
-                className="h-12 sm:h-14" 
-              />
+              {isMobile ? (
+                <img 
+                  src="https://i.imgur.com/DeL4OIK.png" 
+                  alt="GamerGrave Icon" 
+                  className="h-10 w-10" 
+                />
+              ) : (
+                <img 
+                  src="https://i.imgur.com/ItKyOPt.jpeg" 
+                  alt="GamerGrave Logo" 
+                  className="h-12 sm:h-14" 
+                />
+              )}
             </Link>
           </div>
           
-          {/* Search Bar - Now visible on all screens */}
-          <div className="flex-grow mx-4 sm:mx-6 md:mx-8 lg:mx-10 max-w-xl relative">
+          {/* Search Bar - Now visible on all screens with improved mobile experience */}
+          <div className="flex-grow mx-2 sm:mx-6 md:mx-8 lg:mx-10 max-w-xl relative">
             <div className={`relative ${searchFocused ? 'ring-2 ring-ggrave-red' : ''}`}>
               <input
                 type="text"
+                id="game-search"
+                name="game-search"
                 placeholder="Search for games, devs, tags..."
                 className="w-full bg-ggrave-darkgray text-white px-4 py-2 rounded-sm border-2 border-white focus:outline-none focus:border-ggrave-red"
                 onFocus={() => setSearchFocused(true)}
@@ -131,15 +143,66 @@ const Navbar: React.FC = () => {
               </div>
             )}
             
+            {/* Mobile Authentication Button */}
+            {!isAuthenticated && (
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="sm:hidden bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red"
+                onClick={() => {
+                  setAuthModalView('login');
+                  setAuthModalOpen(true);
+                }}
+              >
+                <User size={18} />
+              </Button>
+            )}
+            
+            {/* Mobile Dropdown for Authenticated Users */}
+            {isAuthenticated && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="sm:hidden">
+                  <Button variant="outline" size="icon" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray">
+                    <User size={18} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-gray-900 border border-gray-800 text-white">
+                  <DropdownMenuLabel>{user?.username || 'My Account'}</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-gray-800" />
+                  <DropdownMenuItem 
+                    className="hover:bg-gray-800 cursor-pointer"
+                    onClick={() => navigate('/account/me')}
+                  >
+                    <User size={14} className="mr-2" /> Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="hover:bg-gray-800 cursor-pointer"
+                    onClick={() => navigate('/submit-game')}
+                  >
+                    <Upload size={14} className="mr-2" /> Submit Game
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gray-800" />
+                  <DropdownMenuItem 
+                    className="hover:bg-gray-800 cursor-pointer text-red-400"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={14} className="mr-2" /> Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            
             {/* Mobile "Submit" Button */}
-            <Button 
-              variant="default" 
-              size="icon" 
-              className="sm:hidden bg-ggrave-red text-white hover:bg-red-700"
-              onClick={handleSubmitClick}
-            >
-              <Upload size={18} />
-            </Button>
+            {!isAuthenticated && (
+              <Button 
+                variant="default" 
+                size="icon" 
+                className="sm:hidden bg-ggrave-red text-white hover:bg-red-700"
+                onClick={handleSubmitClick}
+              >
+                <Upload size={18} />
+              </Button>
+            )}
           </div>
         </div>
       </div>
