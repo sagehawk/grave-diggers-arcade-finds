@@ -29,9 +29,9 @@ const categories = [
 ];
 
 const timeframes = [
-  { label: "All Time", value: "all" },
-  { label: "Last 30 Days", value: "30days" },
-  { label: "Last 7 Days", value: "7days" },
+  { label: "All Time", value: "allTime" },
+  { label: "Last 30 Days", value: "month" },
+  { label: "Last 7 Days", value: "week" },
   { label: "Today", value: "today" }
 ];
 
@@ -84,7 +84,7 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({
     if (filter && onFilterChange) {
       onFilterChange({
         ...filter,
-        timeframe: value
+        timeFrame: value as FilterState['timeFrame']
       });
     }
   };
@@ -109,7 +109,7 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="bg-gray-800 border-gray-700 text-white">
-                {filter?.timeframe ? timeframes.find(t => t.value === filter.timeframe)?.label || 'All Time' : 'All Time'}
+                {filter?.timeFrame ? timeframes.find(t => t.value === filter.timeFrame)?.label || 'All Time' : 'All Time'}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

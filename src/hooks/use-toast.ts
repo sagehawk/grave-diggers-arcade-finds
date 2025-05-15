@@ -1,3 +1,7 @@
 
-// Export toast hooks from shadcn/ui
-export { useToast, toast } from "@/components/ui/toast";
+// This file contains the actual implementation of the toast hooks
+// The file in src/components/ui/use-toast.ts re-exports from here
+
+// Export the toast hooks from our implementation
+export { useToast, toast } from "./use-toast.tsx";
+
