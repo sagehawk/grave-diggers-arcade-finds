@@ -1,3 +1,4 @@
+
 import { supabase } from '../lib/supabase';
 import { Game, Genre, Platform } from '../types';
 
@@ -119,6 +120,7 @@ export const fetchGames = async (
   
   // Transform data to match Game type
   const transformedGames: Game[] = data.map((game) => {
+    // Create game object with all required properties
     return {
       id: game.id,
       title: game.title,
@@ -180,7 +182,6 @@ export const fetchGameById = async (id: string) => {
     releaseDate: data.release_date,
     mediaGallery: data.gallery_image_urls,
     videoUrl: data.trailer_url,
-    // Check if current user has liked this game
     userHasLiked: currentUserId ? data.game_likes?.some((like: any) => like.user_id === currentUserId) : false
   };
   

@@ -8,8 +8,7 @@ const LoadingIndicator: React.FC = () => {
         <img 
           src="https://i.imgur.com/DeL4OIK.png" 
           alt="Loading..." 
-          className="w-10 h-10 animate-pulse" 
-          style={{ animationDuration: '1.5s' }}
+          className="w-10 h-10 animate-[wiggle_1s_ease-in-out_infinite]" 
         />
       </div>
     </div>

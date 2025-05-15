@@ -1,4 +1,3 @@
-
 // Game data structure
 export interface Game {
   id: string;
@@ -19,6 +18,7 @@ export interface Game {
   videoUrl?: string;
   updates?: GameUpdate[];
   downloadFiles?: GameFile[];
+  userHasLiked?: boolean;
 }
 
 export interface GameUpdate {
