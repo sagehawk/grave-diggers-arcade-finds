@@ -1,13 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { FilterState, Genre, Platform } from '../types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { 
-  Slider,
-  Switch,
-  Checkbox,
-  Label 
-} from '@/components/ui/shadcn-components';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Check, ChevronDown, ChevronUp, Clock, Filter } from 'lucide-react';
 import FilterSectionHeader from './filter/FilterSectionHeader';
 import { supabase } from '../lib/supabase';

@@ -4,6 +4,7 @@ import {
   Toast,
   ToastClose,
   ToastDescription,
+  ToastProvider as ToastProviderPrimitive,
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
@@ -11,12 +12,14 @@ import { useToast as useToastPrimitive } from "@/components/ui/use-toast"
 
 const ToastContext = React.createContext<{
   toast: (props: any) => void
+  toasts?: any[]
 }>({
   toast: () => {},
+  toasts: []
 })
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const { toast: primitive } = useToastPrimitive()
+  const { toast: primitive, toasts } = useToastPrimitive()
 
   const toast = React.useCallback(
     (props: any) => {
@@ -26,7 +29,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={{ toast, toasts }}>
       {children}
     </ToastContext.Provider>
   )
@@ -40,4 +43,5 @@ export const useToast = () => {
   return context
 }
 
-export { toast } from "@/components/ui/use-toast"
+// Export for compatibility
+export { ToastProvider as ToastProviderLegacy }

@@ -130,6 +130,10 @@ export const fetchGames = async (
   
   if (error) throw error;
   
+  // Get current user ID for like checking
+  const { data: { user } } = await supabase.auth.getUser();
+  const currentUserId = user?.id;
+  
   // Transform data to match Game type
   const transformedGames: Game[] = data.map((game) => {
     return {
@@ -150,7 +154,7 @@ export const fetchGames = async (
       mediaGallery: game.gallery_image_urls,
       videoUrl: game.trailer_url,
       // Check if current user has liked this game
-      userLiked: game.game_likes?.some((like: any) => like.user_id === supabase.auth.getUser()?.data?.user?.id)
+      userHasLiked: currentUserId ? game.game_likes?.some((like: any) => like.user_id === currentUserId) : false
     };
   });
   
@@ -172,6 +176,10 @@ export const fetchGameById = async (id: string) => {
     
   if (error) throw error;
   
+  // Get current user ID for like checking
+  const { data: { user } } = await supabase.auth.getUser();
+  const currentUserId = user?.id;
+  
   // Transform to match Game type
   const game: Game = {
     id: data.id,
@@ -191,7 +199,7 @@ export const fetchGameById = async (id: string) => {
     mediaGallery: data.gallery_image_urls,
     videoUrl: data.trailer_url,
     // Check if current user has liked this game
-    userLiked: data.game_likes?.some((like: any) => like.user_id === supabase.auth.getUser()?.data?.user?.id)
+    userHasLiked: currentUserId ? data.game_likes?.some((like: any) => like.user_id === currentUserId) : false
   };
   
   return game;
@@ -199,10 +207,11 @@ export const fetchGameById = async (id: string) => {
 
 // Likes functions
 export const toggleGameLike = async (gameId: string) => {
-  const user = supabase.auth.getUser();
-  if (!user?.data?.user) throw new Error('You must be logged in to like a game');
+  // Get the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be logged in to like a game');
   
-  const userId = user.data.user.id;
+  const userId = user.id;
   
   // Check if user already liked this game
   const { data: existingLike, error: checkError } = await supabase
@@ -251,14 +260,15 @@ export const fetchGameComments = async (gameId: string) => {
 };
 
 export const addGameComment = async (gameId: string, content: string, parentCommentId?: string) => {
-  const user = supabase.auth.getUser();
-  if (!user?.data?.user) throw new Error('You must be logged in to comment');
+  // Get the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be logged in to comment');
   
   const { data, error } = await supabase
     .from('comments')
     .insert({
       game_id: gameId,
-      user_id: user.data.user.id,
+      user_id: user.id,
       content,
       parent_comment_id: parentCommentId || null
     })
@@ -274,10 +284,11 @@ export const addGameComment = async (gameId: string, content: string, parentComm
 
 // File upload helpers
 export const uploadGameImage = async (file: File, gameId: string, type: 'thumbnail' | 'banner' | 'gallery') => {
-  const user = supabase.auth.getUser();
-  if (!user?.data?.user) throw new Error('You must be logged in to upload images');
+  // Get the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be logged in to upload images');
   
-  const userId = user.data.user.id;
+  const userId = user.id;
   const fileExt = file.name.split('.').pop();
   const fileName = `${type}-${Date.now()}.${fileExt}`;
   const filePath = `games/${gameId}/${fileName}`;
@@ -300,10 +311,11 @@ export const uploadGameImage = async (file: File, gameId: string, type: 'thumbna
 };
 
 export const uploadUserAvatar = async (file: File) => {
-  const user = supabase.auth.getUser();
-  if (!user?.data?.user) throw new Error('You must be logged in to upload an avatar');
+  // Get the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be logged in to upload an avatar');
   
-  const userId = user.data.user.id;
+  const userId = user.id;
   const fileExt = file.name.split('.').pop();
   const fileName = `avatar-${Date.now()}.${fileExt}`;
   const filePath = `${userId}/${fileName}`;
