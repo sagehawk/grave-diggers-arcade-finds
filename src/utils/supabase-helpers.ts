@@ -1,4 +1,3 @@
-
 import { supabase } from '../lib/supabase';
 import { Game, Genre, Platform } from '../types';
 
@@ -46,6 +45,7 @@ export const fetchGames = async (
     searchQuery?: string;
     sortBy?: string;
     timeFrame?: string;
+    isFreeOnly?: boolean;
   } = {}
 ) => {
   const pageSize = 12;
@@ -81,14 +81,9 @@ export const fetchGames = async (
     query = query.in('release_status', filters.releaseStatus);
   }
   
-  if (filters.priceRange) {
-    // Handle price filtering logic based on your data structure
-    if (filters.priceRange[0] > 0) {
-      query = query.gte('price', filters.priceRange[0]);
-    }
-    if (filters.priceRange[1] < 100) {
-      query = query.lte('price', filters.priceRange[1]);
-    }
+  // Filter free games if enabled
+  if (filters.isFreeOnly) {
+    query = query.eq('is_free', true);
   }
   
   // Apply sorting
@@ -106,18 +101,6 @@ export const fetchGames = async (
       break;
     case 'releaseDate':
       query = query.order('release_date', { ascending: false });
-      break;
-    case 'priceAsc':
-      query = query.order('price', { ascending: true });
-      break;
-    case 'priceDesc':
-      query = query.order('price', { ascending: false });
-      break;
-    case 'nameAsc':
-      query = query.order('title', { ascending: true });
-      break;
-    case 'nameDesc':
-      query = query.order('title', { ascending: false });
       break;
     default:
       query = query.order('created_at', { ascending: false });
@@ -153,7 +136,6 @@ export const fetchGames = async (
       releaseDate: game.release_date,
       mediaGallery: game.gallery_image_urls,
       videoUrl: game.trailer_url,
-      // Check if current user has liked this game
       userHasLiked: currentUserId ? game.game_likes?.some((like: any) => like.user_id === currentUserId) : false
     };
   });

@@ -23,12 +23,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
     { label: 'Trending', value: 'trending' },
     { label: 'Most Popular', value: 'mostViewed' },
     { label: 'Top Rated', value: 'highestRated' },
-    { label: 'Newest Releases', value: 'releaseDate' },
-    { label: 'Recently Added', value: 'newest' },
-    { label: 'Price: Low to High', value: 'priceAsc' },
-    { label: 'Price: High to Low', value: 'priceDesc' },
-    { label: 'Name: A-Z', value: 'nameAsc' },
-    { label: 'Name: Z-A', value: 'nameDesc' }
+    { label: 'Recently Added', value: 'newest' }
   ];
 
   const defaultTimeFrameOptions = [
@@ -67,11 +62,11 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
     });
   };
 
-  // Function to reset price filter
-  const resetPrice = () => {
+  // Function to toggle free games filter
+  const toggleFreeGames = () => {
     onFilterChange({
       ...filter,
-      priceRange: [0, 100]
+      isFreeOnly: !filter.isFreeOnly
     });
   };
 
@@ -88,8 +83,8 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
     filter.genres.length > 0 || 
     filter.platforms.length > 0 || 
     filter.releaseStatus.length > 0 || 
-    (filter.priceRange[0] !== 0 || filter.priceRange[1] !== 100) ||
-    filter.searchQuery.trim() !== '';
+    filter.searchQuery.trim() !== '' ||
+    filter.isFreeOnly;
 
   // If no filters are applied, return null
   if (!hasActiveFilters) {
@@ -107,6 +102,20 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
             onClick={resetSearch}
             className="ml-2 text-gray-400 hover:text-ggrave-red"
             aria-label="Remove search filter"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Free Games pill */}
+      {filter.isFreeOnly && (
+        <div className="flex items-center bg-ggrave-darkgray rounded-full px-3 py-1 text-sm text-white">
+          <span className="font-medium">Free Games Only</span>
+          <button 
+            onClick={toggleFreeGames}
+            className="ml-2 text-gray-400 hover:text-ggrave-red"
+            aria-label="Remove free games filter"
           >
             <X size={14} />
           </button>
@@ -158,27 +167,6 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
         </div>
       ))}
 
-      {/* Price filter pill */}
-      {(filter.priceRange[0] !== 0 || filter.priceRange[1] !== 100) && (
-        <div className="flex items-center bg-ggrave-darkgray rounded-full px-3 py-1 text-sm text-white">
-          <span className="mr-1">Price:</span>
-          <span className="font-medium">
-            {filter.priceRange[0] === 0 && filter.priceRange[1] === 0 
-              ? 'Free' 
-              : filter.priceRange[0] > 0 
-                ? `$${filter.priceRange[0]}+ only` 
-                : `$0 - $${filter.priceRange[1]}`}
-          </span>
-          <button 
-            onClick={resetPrice}
-            className="ml-2 text-gray-400 hover:text-ggrave-red"
-            aria-label="Remove price filter"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
       {/* Clear all button */}
       {hasActiveFilters && (
         <button 
@@ -188,7 +176,8 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
             platforms: [],
             priceRange: [0, 100],
             releaseStatus: [],
-            searchQuery: ''
+            searchQuery: '',
+            isFreeOnly: false
           })}
           className="text-ggrave-red hover:underline text-sm px-2"
           aria-label="Clear all filters"

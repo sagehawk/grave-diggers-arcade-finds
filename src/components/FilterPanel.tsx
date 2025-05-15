@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FilterState, Genre, Platform } from '../types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -21,7 +22,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
     timeFrame: true,
     genres: true,
     platforms: true,
-    price: true,
+    freeGames: true,
     releaseStatus: true,
   });
 
@@ -165,11 +166,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
     });
   };
 
-  // Handle price range change
-  const handlePriceRangeChange = (value: [number, number]) => {
+  // Handle free games filter
+  const handleFreeGamesChange = (checked: boolean) => {
     onFilterChange({
       ...filter,
-      priceRange: value
+      isFreeOnly: checked
     });
   };
 
@@ -199,12 +200,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
               { value: 'trending', label: 'Trending' },
               { value: 'mostViewed', label: 'Most Viewed' },
               { value: 'mostLiked', label: 'Most Liked' },
-              { value: 'newest', label: 'Recently Added' },
-              { value: 'releaseDate', label: 'Release Date' },
-              { value: 'priceAsc', label: 'Price: Low to High' },
-              { value: 'priceDesc', label: 'Price: High to Low' },
-              { value: 'nameAsc', label: 'Name: A-Z' },
-              { value: 'nameDesc', label: 'Name: Z-A' }
+              { value: 'newest', label: 'Recently Added' }
             ].map((option) => (
               <div key={option.value} className="flex items-center">
                 <button
@@ -343,72 +339,34 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
         )}
       </div>
       
-      {/* Price Range Section */}
+      {/* Free Games Section */}
       <div className="mb-4">
         <button 
           className="w-full flex justify-between items-center text-white text-sm mb-2"
-          onClick={() => toggleSection('price')}
+          onClick={() => toggleSection('freeGames')}
         >
           <FilterSectionHeader 
             icon={Filter} 
-            title="PRICE" 
-            isExpanded={expandedSections.price} 
+            title="FREE GAMES" 
+            isExpanded={expandedSections.freeGames} 
           />
         </button>
         
-        {expandedSections.price && (
+        {expandedSections.freeGames && (
           <div className="mt-3 ml-1">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-gray-400">
-                ${filter.priceRange[0]}
-              </div>
-              <div className="text-sm text-gray-400">
-                ${filter.priceRange[1]}
-              </div>
-            </div>
-            
-            <Slider
-              value={filter.priceRange}
-              min={0}
-              max={100}
-              step={1}
-              onValueChange={handlePriceRangeChange}
-              className="mt-1"
-            />
-            
-            <div className="mt-3 flex items-center justify-between">
-              <button
-                className={`px-3 py-1 text-xs rounded ${
-                  filter.priceRange[0] === 0 && filter.priceRange[1] === 100
-                    ? 'bg-ggrave-red text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-                onClick={() => handlePriceRangeChange([0, 100])}
+            <div className="flex items-center group">
+              <Checkbox
+                id="free-games-only"
+                checked={filter.isFreeOnly || false}
+                onCheckedChange={(checked) => handleFreeGamesChange(checked === true)}
+                className="border-gray-600 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
+              />
+              <label
+                htmlFor="free-games-only"
+                className="text-sm ml-2 text-gray-300 group-hover:text-white cursor-pointer"
               >
-                All
-              </button>
-              
-              <button
-                className={`px-3 py-1 text-xs rounded ${
-                  filter.priceRange[0] === 0 && filter.priceRange[1] === 0
-                    ? 'bg-ggrave-red text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-                onClick={() => handlePriceRangeChange([0, 0])}
-              >
-                Free
-              </button>
-              
-              <button
-                className={`px-3 py-1 text-xs rounded ${
-                  filter.priceRange[0] > 0
-                    ? 'bg-ggrave-red text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-                onClick={() => handlePriceRangeChange([1, 100])}
-              >
-                Paid
-              </button>
+                Show free games only
+              </label>
             </div>
           </div>
         )}
@@ -468,6 +426,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
           searchQuery: '',
           sortBy: 'trending',
           timeFrame: 'allTime',
+          isFreeOnly: false,
         })}
       >
         Clear All Filters
