@@ -3,6 +3,7 @@ import React from 'react';
 import { FilterState } from '../../types';
 import ActiveFilters from '../ActiveFilters';
 import GameGrid from '../GameGrid';
+import SampleDataLoader from '../SampleDataLoader';
 
 interface MainContentProps {
   filter: FilterState;
@@ -31,6 +32,7 @@ export const MainContent: React.FC<MainContentProps> = ({ filter, onFilterChange
         filter={filter}
         title="" 
         viewAllLink={`/games/all`}
+        SampleDataLoader={SampleDataLoader}
       />
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Game } from '../types';
 import GameCard from './GameCard';
@@ -12,6 +11,7 @@ interface GameGridProps {
   viewAllLink?: string;
   className?: string;
   itemsPerPage?: number;
+  SampleDataLoader?: React.ComponentType;
 }
 
 const GameGrid: React.FC<GameGridProps> = ({ 
@@ -19,7 +19,8 @@ const GameGrid: React.FC<GameGridProps> = ({
   title, 
   viewAllLink, 
   className = '',
-  itemsPerPage = 12
+  itemsPerPage = 12,
+  SampleDataLoader
 }) => {
   const [games, setGames] = useState<Game[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,6 +124,9 @@ const GameGrid: React.FC<GameGridProps> = ({
   if (games.length === 0 && !loading) {
     return (
       <div className={`mb-6 ${className}`}>
+        {/* Show sample data loader if available and no search query */}
+        {SampleDataLoader && !filter.searchQuery && <SampleDataLoader />}
+        
         <div className="bg-gray-900 rounded-md p-8 text-center">
           <h3 className="text-gray-400 text-lg">No games found for the current filters</h3>
           <p className="text-gray-500 mt-2">Try adjusting your filters or search criteria</p>

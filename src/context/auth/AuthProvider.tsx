@@ -118,7 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Signup function using Supabase
+  // Improved signup function with better error handling
   const signup = async (username: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       // Sign up with Supabase Auth
@@ -134,24 +134,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (authError) throw authError;
       
-      // Create a profile entry in the public profiles table
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            username,
-            email,
-            created_at: new Date().toISOString(),
-          });
-          
-        if (profileError) {
+      // Only try to create profile if user was actually created
+      if (authData.user && !authData.user.email_confirmed_at) {
+        // User needs to confirm email first - don't create profile yet
+        toast({
+          title: "Check your email",
+          description: "Please check your email to verify your account before logging in.",
+        });
+      } else if (authData.user) {
+        // User is already confirmed, create profile
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: authData.user.id,
+              username,
+              email,
+              created_at: new Date().toISOString(),
+            });
+            
+          if (profileError) {
+            console.error('Profile creation failed:', profileError);
+            // Don't fail the signup for profile errors
+          }
+        } catch (profileError) {
           console.error('Profile creation failed:', profileError);
-          toast({
-            title: "Profile setup issue",
-            description: "Your account was created but there was an issue setting up your profile.",
-            variant: "destructive",
-          });
+          // Continue anyway
         }
       }
       
@@ -164,7 +172,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Signup failed:', error);
       
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      let errorMessage = "An unexpected error occurred";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('already registered')) {
+          errorMessage = "An account with this email already exists. Try logging in instead.";
+        } else if (error.message.includes('password')) {
+          errorMessage = "Password must be at least 6 characters long.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
       
       toast({
         title: "Registration failed",
@@ -198,7 +216,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Update user profile
   const updateUserProfile = async (data: { bio?: string }): Promise<boolean> => {
     if (!user) return false;
 
@@ -236,7 +253,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Change password
   const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
     try {
       // First verify current password by trying to sign in
