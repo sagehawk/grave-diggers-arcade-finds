@@ -19,6 +19,10 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        'pixel': ['Press Start 2P', 'monospace'],
+        'inter': ['Inter', 'sans-serif'],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

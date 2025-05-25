@@ -85,8 +85,8 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
             style={{ backgroundImage: `url(${currentGame.banner || currentGame.thumbnail})` }}
           />
           
-          {/* Gradient overlay for text visibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          {/* Reduced gradient overlay for text visibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           
           {/* Top label - Best of today/week/month/allTime */}
           <div className="absolute top-3 left-3 bg-black/60 text-white text-lg font-bold px-3 py-1 z-10">

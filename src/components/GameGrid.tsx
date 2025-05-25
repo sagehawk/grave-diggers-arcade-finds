@@ -33,7 +33,12 @@ const GameGrid: React.FC<GameGridProps> = ({
 
   // Function to filter and paginate portfolio games
   const loadGames = useCallback(async (page: number, isInitial: boolean = false) => {
-    if (loading || (allLoaded && !isInitial)) return;
+    console.log('loadGames called with page:', page, 'isInitial:', isInitial, 'loading:', loading, 'allLoaded:', allLoaded);
+    
+    if (loading || (allLoaded && !isInitial)) {
+      console.log('Skipping load: loading or all loaded');
+      return;
+    }
     
     try {
       setLoading(true);
@@ -113,6 +118,8 @@ const GameGrid: React.FC<GameGridProps> = ({
       const endIndex = startIndex + itemsPerPage;
       const paginatedGames = filteredGames.slice(startIndex, endIndex);
       
+      console.log('Filtered games:', filteredGames.length, 'Paginated games:', paginatedGames.length);
+      
       if (isInitial) {
         setGames(paginatedGames);
       } else {
@@ -122,6 +129,7 @@ const GameGrid: React.FC<GameGridProps> = ({
       // Check if we've loaded all games
       if (paginatedGames.length < itemsPerPage || endIndex >= filteredGames.length) {
         setAllLoaded(true);
+        console.log('All games loaded');
       } else {
         setAllLoaded(false);
       }
@@ -134,12 +142,14 @@ const GameGrid: React.FC<GameGridProps> = ({
         setInitialLoading(false);
       }
     }
-  }, [filter, loading, allLoaded, itemsPerPage]);
+  }, [filter, itemsPerPage]); // Remove loading and allLoaded from dependencies
 
   // Load more games when scrolling
   const loadMoreGames = useCallback(() => {
+    console.log('loadMoreGames called, current state:', { loading, allLoaded, currentPage });
     if (!loading && !allLoaded) {
       const nextPage = currentPage + 1;
+      console.log('Loading next page:', nextPage);
       setCurrentPage(nextPage);
       loadGames(nextPage);
     }
@@ -149,8 +159,13 @@ const GameGrid: React.FC<GameGridProps> = ({
   useEffect(() => {
     if (!loadingRef.current) return;
     
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+    
     observerRef.current = new IntersectionObserver(
       (entries) => {
+        console.log('Intersection observer triggered:', entries[0].isIntersecting);
         if (entries[0].isIntersecting && !loading && !allLoaded) {
           loadMoreGames();
         }
@@ -161,14 +176,15 @@ const GameGrid: React.FC<GameGridProps> = ({
     observerRef.current.observe(loadingRef.current);
     
     return () => {
-      if (observerRef.current && loadingRef.current) {
-        observerRef.current.unobserve(loadingRef.current);
+      if (observerRef.current) {
+        observerRef.current.disconnect();
       }
     };
   }, [loadMoreGames, loading, allLoaded]);
 
   // Initial load and reload when filters change
   useEffect(() => {
+    console.log('Filter changed, resetting state');
     setGames([]);
     setCurrentPage(1);
     setAllLoaded(false);
