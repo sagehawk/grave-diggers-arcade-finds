@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Game } from '../types';
 import { portfolioGames } from '../data/portfolioGamesData';
 import GameGridDisplay from './GameGrid/GameGridDisplay';
@@ -69,9 +69,11 @@ const GameGrid: React.FC<GameGridProps> = ({
     setHasMoreGames(filteredGames.length > 0);
   }, [filter.searchQuery, filter.genres, filter.platforms, filter.priceRange, filter.releaseStatus, filter.sortBy, filteredGames.length]);
 
-  // Load initial games when filteredGames is set and we're in initial loading state
+  // Load initial games when component mounts or when filteredGames changes
   useEffect(() => {
-    if (filteredGames.length > 0 && initialLoading && displayedGames.length === 0) {
+    console.log('Effect triggered - filteredGames length:', filteredGames.length, 'initialLoading:', initialLoading, 'displayedGames length:', displayedGames.length);
+    
+    if (filteredGames.length > 0 && initialLoading) {
       console.log('Loading initial batch');
       loadNextBatch(true);
     } else if (filteredGames.length === 0 && initialLoading) {
@@ -79,7 +81,7 @@ const GameGrid: React.FC<GameGridProps> = ({
       setInitialLoading(false);
       setHasMoreGames(false);
     }
-  }, [filteredGames.length, initialLoading, displayedGames.length, loadNextBatch]);
+  }, [filteredGames, initialLoading, loadNextBatch]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
