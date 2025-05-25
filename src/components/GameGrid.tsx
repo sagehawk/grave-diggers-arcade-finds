@@ -33,10 +33,10 @@ const GameGrid: React.FC<GameGridProps> = ({
 
   // Function to filter and paginate portfolio games
   const loadGames = useCallback(async (page: number, isInitial: boolean = false) => {
-    console.log('loadGames called with page:', page, 'isInitial:', isInitial, 'loading:', loading, 'allLoaded:', allLoaded);
+    console.log('loadGames called with page:', page, 'isInitial:', isInitial);
     
-    if (loading || (allLoaded && !isInitial)) {
-      console.log('Skipping load: loading or all loaded');
+    if (loading && !isInitial) {
+      console.log('Skipping load: already loading');
       return;
     }
     
@@ -118,12 +118,14 @@ const GameGrid: React.FC<GameGridProps> = ({
       const endIndex = startIndex + itemsPerPage;
       const paginatedGames = filteredGames.slice(startIndex, endIndex);
       
-      console.log('Filtered games:', filteredGames.length, 'Paginated games:', paginatedGames.length);
+      console.log('Total filtered games:', filteredGames.length, 'Paginated games for page', page, ':', paginatedGames.length);
       
       if (isInitial) {
         setGames(paginatedGames);
+        setCurrentPage(1);
       } else {
         setGames(prev => [...prev, ...paginatedGames]);
+        setCurrentPage(page);
       }
       
       // Check if we've loaded all games
@@ -142,22 +144,20 @@ const GameGrid: React.FC<GameGridProps> = ({
         setInitialLoading(false);
       }
     }
-  }, [filter, itemsPerPage]); // Remove loading and allLoaded from dependencies
+  }, [filter, itemsPerPage]);
 
   // Load more games when scrolling
   const loadMoreGames = useCallback(() => {
-    console.log('loadMoreGames called, current state:', { loading, allLoaded, currentPage });
     if (!loading && !allLoaded) {
       const nextPage = currentPage + 1;
-      console.log('Loading next page:', nextPage);
-      setCurrentPage(nextPage);
+      console.log('Loading more games, next page:', nextPage);
       loadGames(nextPage);
     }
   }, [currentPage, loading, allLoaded, loadGames]);
 
   // Set up intersection observer for infinite scrolling
   useEffect(() => {
-    if (!loadingRef.current) return;
+    if (!loadingRef.current || allLoaded) return;
     
     if (observerRef.current) {
       observerRef.current.disconnect();
@@ -165,8 +165,8 @@ const GameGrid: React.FC<GameGridProps> = ({
     
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        console.log('Intersection observer triggered:', entries[0].isIntersecting);
-        if (entries[0].isIntersecting && !loading && !allLoaded) {
+        if (entries[0].isIntersecting) {
+          console.log('Intersection observer triggered, loading more games');
           loadMoreGames();
         }
       },
@@ -180,7 +180,7 @@ const GameGrid: React.FC<GameGridProps> = ({
         observerRef.current.disconnect();
       }
     };
-  }, [loadMoreGames, loading, allLoaded]);
+  }, [loadMoreGames, allLoaded]);
 
   // Initial load and reload when filters change
   useEffect(() => {
@@ -190,7 +190,7 @@ const GameGrid: React.FC<GameGridProps> = ({
     setAllLoaded(false);
     setInitialLoading(true);
     loadGames(1, true);
-  }, [filter, loadGames]);
+  }, [filter]);
 
   if (initialLoading) {
     return (
@@ -205,8 +205,8 @@ const GameGrid: React.FC<GameGridProps> = ({
   if (games.length === 0 && !loading) {
     return (
       <div className={`mb-6 ${className}`}>
-        <div className="bg-gray-900 rounded-md p-8 text-center">
-          <h3 className="text-gray-400 text-lg">No games found for the current filters</h3>
+        <div className="bg-gray-900 rounded-lg p-8 text-center border border-gray-800">
+          <h3 className="text-gray-400 text-lg font-medium">No games found</h3>
           <p className="text-gray-500 mt-2">Try adjusting your filters or search criteria</p>
         </div>
       </div>
@@ -215,28 +215,28 @@ const GameGrid: React.FC<GameGridProps> = ({
   
   return (
     <div className={`mb-6 ${className}`}>
-      {/* Grid of game cards with aspect ratio adjusted for mobile */}
+      {/* Grid of game cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {games.map((game) => (
-          <GameCard key={game.id} game={game} />
+          <GameCard key={`${game.id}-${games.indexOf(game)}`} game={game} />
         ))}
       </div>
       
-      {/* Loading indicator */}
+      {/* Loading indicator and infinite scroll trigger */}
       {!allLoaded && (
-        <div ref={loadingRef} className="pt-4">
+        <div ref={loadingRef} className="pt-8 flex justify-center">
           {loading && <LoadingIndicator />}
+          {!loading && (
+            <div className="h-4 w-full"></div>
+          )}
         </div>
       )}
       
-      {allLoaded && viewAllLink && (
-        <div className="flex justify-center mt-6">
-          <a 
-            href={viewAllLink} 
-            className="text-ggrave-red hover:underline text-xs font-medium"
-          >
-            View All
-          </a>
+      {allLoaded && games.length > 0 && (
+        <div className="flex justify-center mt-8">
+          <div className="text-gray-500 text-sm">
+            Showing all {totalGames} games
+          </div>
         </div>
       )}
     </div>

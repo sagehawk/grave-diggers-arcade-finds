@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, User, XIcon, Upload, LogOut } from 'lucide-react';
+import { User, Upload, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useAuth } from '../hooks/useAuth';
 import AuthModal from './AuthModal';
@@ -17,7 +17,6 @@ import {
 import { useIsMobile } from '../hooks/use-mobile';
 
 const Navbar: React.FC = () => {
-  const [searchFocused, setSearchFocused] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalView, setAuthModalView] = useState<'login' | 'register'>('login');
   const { user, isAuthenticated, logout } = useAuth();
@@ -48,12 +47,12 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-ggrave-black border-b border-ggrave-darkgray sticky top-0 z-50">
+    <nav className="bg-ggrave-black border-b border-gray-800 sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
               {isMobile ? (
                 <img 
                   src="https://i.imgur.com/DeL4OIK.png" 
@@ -70,22 +69,17 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
           
-          {/* Search Bar - Now visible on all screens with improved mobile experience */}
-          <div className="flex-grow mx-2 sm:mx-6 md:mx-8 lg:mx-10 max-w-xl relative">
-            <div className={`relative ${searchFocused ? 'ring-2 ring-ggrave-red' : ''}`}>
-              <input
-                type="text"
-                id="game-search"
-                name="game-search"
-                placeholder="Search for games, devs, tags..."
-                className="w-full bg-ggrave-darkgray text-white px-4 py-2 rounded-sm border-2 border-white focus:outline-none focus:border-ggrave-red"
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-              />
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <Search size={18} className="text-gray-400" />
-              </div>
-            </div>
+          {/* Navigation Links - Center */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
+              Games
+            </Link>
+            <Link to="/developers" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
+              Developers
+            </Link>
+            <Link to="/community" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
+              Community
+            </Link>
           </div>
           
           {/* Right Side Actions */}
@@ -93,7 +87,7 @@ const Navbar: React.FC = () => {
             {/* Submit Game Button */}
             <Button 
               size="sm" 
-              className="bg-ggrave-red text-white hover:bg-red-700 hidden sm:flex items-center"
+              className="bg-ggrave-red text-white hover:bg-red-700 hidden sm:flex items-center transition-all hover:scale-105"
               onClick={handleSubmitClick}
             >
               <Upload size={16} className="mr-1.5" /> Submit Game
@@ -104,7 +98,7 @@ const Navbar: React.FC = () => {
               <div className="hidden sm:flex items-center space-x-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray flex items-center gap-2">
+                    <Button variant="outline" size="sm" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray hover:border-gray-600 flex items-center gap-2 transition-all">
                       <User size={14} /> {user?.username || 'Profile'}
                     </Button>
                   </DropdownMenuTrigger>
@@ -132,7 +126,7 @@ const Navbar: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50"
+                  className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red hover:border-ggrave-red focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50 transition-all"
                   onClick={() => {
                     setAuthModalView('login');
                     setAuthModalOpen(true);
@@ -148,7 +142,7 @@ const Navbar: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="sm:hidden bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red"
+                className="sm:hidden bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red transition-all"
                 onClick={() => {
                   setAuthModalView('login');
                   setAuthModalOpen(true);
@@ -162,7 +156,7 @@ const Navbar: React.FC = () => {
             {isAuthenticated && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild className="sm:hidden">
-                  <Button variant="outline" size="icon" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray">
+                  <Button variant="outline" size="icon" className="bg-transparent border border-gray-700 text-white hover:bg-ggrave-darkgray transition-all">
                     <User size={18} />
                   </Button>
                 </DropdownMenuTrigger>
@@ -197,7 +191,7 @@ const Navbar: React.FC = () => {
               <Button 
                 variant="default" 
                 size="icon" 
-                className="sm:hidden bg-ggrave-red text-white hover:bg-red-700"
+                className="sm:hidden bg-ggrave-red text-white hover:bg-red-700 transition-all hover:scale-105"
                 onClick={handleSubmitClick}
               >
                 <Upload size={18} />
