@@ -37,7 +37,7 @@ const useGameLoading = ({
 
     setIsLoading(true);
 
-    const delay = isInitial ? 0 : 1500; // 1.5 second delay for dramatic effect
+    const delay = isInitial ? 0 : 1100; // 1.1 second delay for dramatic effect
     
     loadingTimeoutRef.current = setTimeout(() => {
       const batchToLoad = isInitial ? 0 : currentBatch + 1;
