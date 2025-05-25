@@ -118,7 +118,7 @@ const GameGrid: React.FC<GameGridProps> = ({
 
     setIsLoading(true);
 
-    const delay = isInitial ? 0 : 2000; // 2 second delay for dramatic effect
+    const delay = isInitial ? 0 : 1500; // 1.5 second delay for dramatic effect
     
     loadingTimeoutRef.current = setTimeout(() => {
       const batchToLoad = isInitial ? 0 : currentBatch + 1;
@@ -153,7 +153,7 @@ const GameGrid: React.FC<GameGridProps> = ({
     }, delay);
   }, [currentBatch, filteredGames, itemsPerPage, isLoading]);
 
-  // Reset and load initial games when filter changes
+  // Initialize filtered games on component mount and when filter changes
   useEffect(() => {
     console.log('Filter changed, resetting everything');
     
@@ -169,22 +169,23 @@ const GameGrid: React.FC<GameGridProps> = ({
     setIsLoading(false);
     setInitialLoading(true);
     setHasMoreGames(filtered.length > 0);
-  }, [filter, filterGames]);
+  }, [filterGames]);
 
-  // Load initial games when filteredGames is set
+  // Load initial games when filteredGames is set and we're in initial loading state
   useEffect(() => {
-    if (filteredGames.length > 0 && displayedGames.length === 0 && initialLoading) {
+    if (filteredGames.length > 0 && initialLoading && displayedGames.length === 0) {
       console.log('Loading initial batch');
       loadNextBatch(true);
-    } else if (filteredGames.length === 0) {
+    } else if (filteredGames.length === 0 && initialLoading) {
+      console.log('No games to load');
       setInitialLoading(false);
       setHasMoreGames(false);
     }
-  }, [filteredGames, displayedGames.length, initialLoading, loadNextBatch]);
+  }, [filteredGames, initialLoading, displayedGames.length, loadNextBatch]);
 
   // Set up intersection observer for infinite scroll
   useEffect(() => {
-    if (!loadingRef.current || !hasMoreGames || isLoading) {
+    if (!loadingRef.current || !hasMoreGames || isLoading || initialLoading) {
       return;
     }
     
@@ -195,7 +196,7 @@ const GameGrid: React.FC<GameGridProps> = ({
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting && hasMoreGames && !isLoading) {
+        if (entry.isIntersecting && hasMoreGames && !isLoading && !initialLoading) {
           console.log('Intersection observer triggered - loading next batch');
           loadNextBatch(false);
         }
@@ -213,7 +214,7 @@ const GameGrid: React.FC<GameGridProps> = ({
         observerRef.current.disconnect();
       }
     };
-  }, [hasMoreGames, isLoading, loadNextBatch]);
+  }, [hasMoreGames, isLoading, initialLoading, loadNextBatch]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -234,7 +235,7 @@ const GameGrid: React.FC<GameGridProps> = ({
     );
   }
   
-  if (displayedGames.length === 0 && !isLoading) {
+  if (displayedGames.length === 0 && !isLoading && !initialLoading) {
     return (
       <div className={`mb-6 ${className}`}>
         <div className="bg-gray-900 rounded-lg p-8 text-center border border-gray-800">
