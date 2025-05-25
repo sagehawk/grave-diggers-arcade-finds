@@ -63,6 +63,11 @@ const CommunityBuzzSection: React.FC<CommunityBuzzSectionProps> = ({ className =
     }
   ];
 
+  const handleCommunityClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    alert('Community features are coming soon! Join our Discord for now: https://discord.gg/QJR7JeNxzc');
+  };
+
   return (
     <div className={`${className}`}>
       <div className="bg-[#181818] border-l-4 border-ggrave-red p-2 mb-3">
@@ -104,12 +109,12 @@ const CommunityBuzzSection: React.FC<CommunityBuzzSectionProps> = ({ className =
                     LIVE
                   </span>
                 )}
-                <a 
-                  href={`/community/topic/${post.id}`} 
-                  className="text-ggrave-red text-xs hover:underline"
+                <button 
+                  onClick={handleCommunityClick}
+                  className="text-ggrave-red text-xs hover:underline cursor-pointer"
                 >
                   {post.type === 'Question' ? 'View Discussion' : 'Join In'}
-                </a>
+                </button>
               </div>
             </div>
           </div>
