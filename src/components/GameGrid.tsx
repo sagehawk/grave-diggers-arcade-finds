@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Game } from '../types';
 import GameCard from './GameCard';
 import LoadingIndicator from './LoadingIndicator';
-import { fetchGames } from '../utils/supabase-helpers';
-import { useToast } from '@/hooks/use-toast';
+import { portfolioGames } from '../data/portfolioGamesData';
 
 interface GameGridProps {
-  filter: any; // We'll use the filter state from parent component
+  filter: any;
   title: string;
   viewAllLink?: string;
   className?: string;
@@ -30,27 +30,97 @@ const GameGrid: React.FC<GameGridProps> = ({
   const [totalGames, setTotalGames] = useState(0);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
-  // Function to load games from Supabase
+  // Function to filter and paginate portfolio games
   const loadGames = useCallback(async (page: number, isInitial: boolean = false) => {
     if (loading || (allLoaded && !isInitial)) return;
     
     try {
       setLoading(true);
       
-      const { games: fetchedGames, total } = await fetchGames(page, filter);
+      // Filter games based on search and filters
+      let filteredGames = [...portfolioGames];
       
-      setTotalGames(total);
+      // Apply search filter
+      if (filter.searchQuery) {
+        const query = filter.searchQuery.toLowerCase();
+        filteredGames = filteredGames.filter(game => 
+          game.title.toLowerCase().includes(query) ||
+          game.developer.toLowerCase().includes(query) ||
+          game.description.toLowerCase().includes(query) ||
+          game.genre.some(g => g.toLowerCase().includes(query))
+        );
+      }
+      
+      // Apply genre filter
+      if (filter.genres && filter.genres.length > 0) {
+        filteredGames = filteredGames.filter(game =>
+          filter.genres.some((filterGenre: string) =>
+            game.genre.some(gameGenre => gameGenre.toLowerCase().includes(filterGenre.toLowerCase()))
+          )
+        );
+      }
+      
+      // Apply platform filter
+      if (filter.platforms && filter.platforms.length > 0) {
+        filteredGames = filteredGames.filter(game =>
+          filter.platforms.some((filterPlatform: string) =>
+            game.platforms.some(gamePlatform => gamePlatform.toLowerCase().includes(filterPlatform.toLowerCase()))
+          )
+        );
+      }
+      
+      // Apply price filter
+      if (filter.priceRange) {
+        filteredGames = filteredGames.filter(game => {
+          const gamePrice = typeof game.price === 'string' ? 0 : game.price;
+          return gamePrice >= filter.priceRange[0] && gamePrice <= filter.priceRange[1];
+        });
+      }
+      
+      // Apply release status filter
+      if (filter.releaseStatus && filter.releaseStatus.length > 0) {
+        filteredGames = filteredGames.filter(game =>
+          filter.releaseStatus.includes(game.releaseStatus)
+        );
+      }
+      
+      // Sort games
+      if (filter.sortBy) {
+        switch (filter.sortBy) {
+          case 'trending':
+            filteredGames.sort((a, b) => b.views - a.views);
+            break;
+          case 'mostLiked':
+            filteredGames.sort((a, b) => b.likes - a.likes);
+            break;
+          case 'newest':
+            filteredGames.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+            break;
+          case 'oldest':
+            filteredGames.sort((a, b) => new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime());
+            break;
+          case 'alphabetical':
+            filteredGames.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        }
+      }
+      
+      setTotalGames(filteredGames.length);
+      
+      // Paginate
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedGames = filteredGames.slice(startIndex, endIndex);
       
       if (isInitial) {
-        setGames(fetchedGames);
+        setGames(paginatedGames);
       } else {
-        setGames(prev => [...prev, ...fetchedGames]);
+        setGames(prev => [...prev, ...paginatedGames]);
       }
       
       // Check if we've loaded all games
-      if (fetchedGames.length < itemsPerPage || games.length + fetchedGames.length >= total) {
+      if (paginatedGames.length < itemsPerPage || endIndex >= filteredGames.length) {
         setAllLoaded(true);
       } else {
         setAllLoaded(false);
@@ -58,18 +128,13 @@ const GameGrid: React.FC<GameGridProps> = ({
       
     } catch (error) {
       console.error('Error loading games:', error);
-      toast({
-        title: "Error loading games",
-        description: error instanceof Error ? error.message : "Failed to load games",
-        variant: "destructive"
-      });
     } finally {
       setLoading(false);
       if (isInitial) {
         setInitialLoading(false);
       }
     }
-  }, [filter, loading, allLoaded, itemsPerPage, games.length, toast]);
+  }, [filter, loading, allLoaded, itemsPerPage]);
 
   // Load more games when scrolling
   const loadMoreGames = useCallback(() => {
@@ -124,9 +189,6 @@ const GameGrid: React.FC<GameGridProps> = ({
   if (games.length === 0 && !loading) {
     return (
       <div className={`mb-6 ${className}`}>
-        {/* Show sample data loader if available and no search query */}
-        {SampleDataLoader && !filter.searchQuery && <SampleDataLoader />}
-        
         <div className="bg-gray-900 rounded-md p-8 text-center">
           <h3 className="text-gray-400 text-lg">No games found for the current filters</h3>
           <p className="text-gray-500 mt-2">Try adjusting your filters or search criteria</p>

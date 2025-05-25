@@ -1,55 +1,50 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { insertSampleData } from '../utils/sampleData';
-import { useToast } from '@/hooks/use-toast';
+import { Github, ExternalLink, Code } from 'lucide-react';
 
 const SampleDataLoader: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const handleLoadSampleData = async () => {
-    setIsLoading(true);
-    try {
-      const success = await insertSampleData();
-      if (success) {
-        toast({
-          title: "Sample data loaded!",
-          description: "The site has been populated with sample games.",
-        });
-        // Refresh the page to show new data
-        window.location.reload();
-      } else {
-        toast({
-          title: "Error loading sample data",
-          description: "Check the console for details.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load sample data:', error);
-      toast({
-        title: "Error loading sample data",
-        description: "An unexpected error occurred.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
-    <div className="p-4 bg-yellow-100 border border-yellow-300 rounded-lg mb-4">
-      <p className="text-yellow-800 mb-2">
-        <strong>Development Mode:</strong> No games found. Load sample data to populate the site?
-      </p>
-      <Button 
-        onClick={handleLoadSampleData}
-        disabled={isLoading}
-        className="bg-yellow-600 hover:bg-yellow-700 text-white"
-      >
-        {isLoading ? "Loading Sample Data..." : "Load Sample Data"}
-      </Button>
+    <div className="p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30 rounded-lg mb-6">
+      <div className="flex items-start gap-4">
+        <Code size={32} className="text-blue-400 flex-shrink-0 mt-1" />
+        <div className="flex-grow">
+          <h3 className="text-blue-100 font-bold text-lg mb-2">
+            Frontend Development Portfolio
+          </h3>
+          <p className="text-gray-300 mb-4">
+            This gaming platform showcases modern React development with TypeScript, 
+            advanced filtering, responsive design, and component-based architecture. 
+            All games data is statically generated for portfolio demonstration.
+          </p>
+          
+          <div className="flex flex-wrap gap-3">
+            <Button 
+              variant="secondary" 
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
+              onClick={() => window.open('https://github.com', '_blank')}
+            >
+              <Github size={16} className="mr-2" />
+              View Source Code
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="border-blue-500 text-blue-300 hover:bg-blue-900/30"
+              onClick={() => window.open('mailto:your.email@example.com', '_blank')}
+            >
+              <ExternalLink size={16} className="mr-2" />
+              Contact Developer
+            </Button>
+          </div>
+          
+          <div className="mt-4 text-xs text-gray-400">
+            <strong>Tech Stack:</strong> React 18, TypeScript, Tailwind CSS, Vite, Shadcn/ui, React Router
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

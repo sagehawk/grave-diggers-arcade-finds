@@ -5,8 +5,6 @@ import { Game } from '../types';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Eye, ThumbsUp, MessageSquare } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { incrementGameView } from '@/utils/supabase-helpers';
 
 interface GameCardProps {
   game: Game;
@@ -14,14 +12,9 @@ interface GameCardProps {
 }
 
 const GameCard: React.FC<GameCardProps> = ({ game, className }) => {
-  const handleClick = async () => {
-    // Increment view count when the card is clicked
-    try {
-      await incrementGameView(game.id);
-    } catch (error) {
-      console.error('Error incrementing view count:', error);
-      // Don't show error to user, just log it
-    }
+  const handleClick = () => {
+    // Portfolio version - no database calls
+    console.log(`Viewing game: ${game.title}`);
   };
 
   return (
@@ -67,15 +60,15 @@ const GameCard: React.FC<GameCardProps> = ({ game, className }) => {
           <div className="absolute top-2 right-2 flex gap-2">
             <div className="bg-black bg-opacity-70 px-1.5 py-0.5 rounded text-white text-xs flex items-center">
               <Eye size={12} className="mr-1" />
-              {game.views}
+              {game.views?.toLocaleString() || '0'}
             </div>
             <div className="bg-black bg-opacity-70 px-1.5 py-0.5 rounded text-white text-xs flex items-center">
               <ThumbsUp size={12} className="mr-1" />
-              {game.likes}
+              {game.likes?.toLocaleString() || '0'}
             </div>
             <div className="bg-black bg-opacity-70 px-1.5 py-0.5 rounded text-white text-xs flex items-center">
               <MessageSquare size={12} className="mr-1" />
-              {game.comments}
+              {game.comments?.toLocaleString() || '0'}
             </div>
           </div>
         </div>

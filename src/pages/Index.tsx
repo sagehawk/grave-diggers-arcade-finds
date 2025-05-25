@@ -1,9 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
-import { FilterState, Game } from '../types';
-import { useToast } from '@/hooks/use-toast';
-import { fetchGames } from '../utils/supabase-helpers';
+import { FilterState } from '../types';
 
 // Import refactored components
 import HeroSection from '../components/home/HeroSection';
@@ -11,6 +9,7 @@ import SearchBar from '../components/home/SearchBar';
 import MainContent from '../components/home/MainContent';
 import SidebarContent from '../components/home/SidebarContent';
 import PageFooter from '../components/home/PageFooter';
+import { portfolioFeaturedGames } from '../data/portfolioGamesData';
 
 const Index: React.FC = () => {
   const [filter, setFilter] = useState<FilterState>({
@@ -22,40 +21,9 @@ const Index: React.FC = () => {
     sortBy: 'trending',
     timeFrame: 'allTime',
   });
-
-  const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
   // State for search input
   const [searchInput, setSearchInput] = useState('');
-  const { toast } = useToast();
-  
-  // Load featured games on component mount
-  useEffect(() => {
-    const loadFeaturedGames = async () => {
-      try {
-        setIsLoading(true);
-        // Get featured games (most liked)
-        const { games } = await fetchGames(1, { 
-          sortBy: 'mostLiked',
-          timeFrame: 'allTime',
-        });
-        
-        setFeaturedGames(games.slice(0, 5)); // Take top 5 for carousel
-      } catch (error) {
-        console.error('Error loading featured games:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load featured games",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadFeaturedGames();
-  }, [toast]);
   
   // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
@@ -89,7 +57,7 @@ const Index: React.FC = () => {
             {/* Left Column Area (Wider) */}
             <div className="w-full md:w-2/3">
               {/* Top: Hero Gallery */}
-              <HeroSection featuredGames={featuredGames} isLoading={isLoading} />
+              <HeroSection featuredGames={portfolioFeaturedGames} isLoading={false} />
               
               {/* Search bar and filter button */}
               <SearchBar 
