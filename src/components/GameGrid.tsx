@@ -19,18 +19,18 @@ const GameGrid: React.FC<GameGridProps> = ({
   title, 
   viewAllLink, 
   className = '',
-  itemsPerPage = 12,
+  itemsPerPage = 9, // 3 rows × 3 columns = 9 items per batch
   SampleDataLoader
 }) => {
-  const [games, setGames] = useState<Game[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [allLoaded, setAllLoaded] = useState(false);
-  const [totalGames, setTotalGames] = useState(0);
+  const [displayedGames, setDisplayedGames] = useState<Game[]>([]);
   const [filteredGames, setFilteredGames] = useState<Game[]>([]);
+  const [currentBatch, setCurrentBatch] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [hasMoreGames, setHasMoreGames] = useState(true);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Function to filter games based on search and filters
   const filterGames = useCallback(() => {
@@ -104,69 +104,87 @@ const GameGrid: React.FC<GameGridProps> = ({
     }
     
     console.log('Filtered games count:', filtered.length);
-    setFilteredGames(filtered);
-    setTotalGames(filtered.length);
-    
     return filtered;
   }, [filter]);
 
-  // Function to load games for a specific page
-  const loadGames = useCallback((page: number, isInitial: boolean = false) => {
-    console.log('loadGames called with page:', page, 'isInitial:', isInitial);
+  // Function to load the next batch of games with dramatic delay
+  const loadNextBatch = useCallback((isInitial: boolean = false) => {
+    console.log('Loading next batch, current batch:', currentBatch, 'isInitial:', isInitial);
     
-    if (loading && !isInitial) {
-      console.log('Skipping load: already loading');
+    if (isLoading && !isInitial) {
+      console.log('Already loading, skipping');
       return;
     }
+
+    setIsLoading(true);
+
+    const delay = isInitial ? 0 : 2000; // 2 second delay for dramatic effect
     
-    setLoading(true);
-    
-    try {
-      // Use filtered games for pagination
-      const startIndex = (page - 1) * itemsPerPage;
+    loadingTimeoutRef.current = setTimeout(() => {
+      const batchToLoad = isInitial ? 0 : currentBatch + 1;
+      const startIndex = batchToLoad * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
-      const paginatedGames = filteredGames.slice(startIndex, endIndex);
+      const newGames = filteredGames.slice(startIndex, endIndex);
       
-      console.log('Loading games from index', startIndex, 'to', endIndex, '- got', paginatedGames.length, 'games');
+      console.log(`Loading batch ${batchToLoad}: games ${startIndex} to ${endIndex - 1}`);
+      console.log('New games:', newGames.length);
       
-      if (isInitial) {
-        setGames(paginatedGames);
-        setCurrentPage(1);
-      } else {
-        setGames(prev => [...prev, ...paginatedGames]);
-        setCurrentPage(page);
+      if (newGames.length > 0) {
+        if (isInitial) {
+          setDisplayedGames(newGames);
+          setCurrentBatch(0);
+        } else {
+          setDisplayedGames(prev => [...prev, ...newGames]);
+          setCurrentBatch(batchToLoad);
+        }
       }
       
-      // Check if we've loaded all games
-      if (paginatedGames.length < itemsPerPage || endIndex >= filteredGames.length) {
-        setAllLoaded(true);
-        console.log('All games loaded');
-      } else {
-        setAllLoaded(false);
-      }
+      // Check if there are more games to load
+      const remainingGames = filteredGames.length - endIndex;
+      setHasMoreGames(remainingGames > 0);
       
-    } catch (error) {
-      console.error('Error loading games:', error);
-    } finally {
-      setLoading(false);
+      console.log('Remaining games:', remainingGames);
+      console.log('Has more games:', remainingGames > 0);
+      
+      setIsLoading(false);
       if (isInitial) {
         setInitialLoading(false);
       }
-    }
-  }, [filteredGames, itemsPerPage, loading]);
+    }, delay);
+  }, [currentBatch, filteredGames, itemsPerPage, isLoading]);
 
-  // Load more games when scrolling
-  const loadMoreGames = useCallback(() => {
-    if (!loading && !allLoaded && filteredGames.length > 0) {
-      const nextPage = currentPage + 1;
-      console.log('Loading more games, next page:', nextPage);
-      loadGames(nextPage);
-    }
-  }, [currentPage, loading, allLoaded, filteredGames.length, loadGames]);
-
-  // Set up intersection observer for infinite scrolling
+  // Reset and load initial games when filter changes
   useEffect(() => {
-    if (!loadingRef.current || allLoaded || filteredGames.length === 0) {
+    console.log('Filter changed, resetting everything');
+    
+    // Clear any pending timeouts
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+    
+    const filtered = filterGames();
+    setFilteredGames(filtered);
+    setDisplayedGames([]);
+    setCurrentBatch(0);
+    setIsLoading(false);
+    setInitialLoading(true);
+    setHasMoreGames(filtered.length > 0);
+  }, [filter, filterGames]);
+
+  // Load initial games when filteredGames is set
+  useEffect(() => {
+    if (filteredGames.length > 0 && displayedGames.length === 0 && initialLoading) {
+      console.log('Loading initial batch');
+      loadNextBatch(true);
+    } else if (filteredGames.length === 0) {
+      setInitialLoading(false);
+      setHasMoreGames(false);
+    }
+  }, [filteredGames, displayedGames.length, initialLoading, loadNextBatch]);
+
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    if (!loadingRef.current || !hasMoreGames || isLoading) {
       return;
     }
     
@@ -177,9 +195,9 @@ const GameGrid: React.FC<GameGridProps> = ({
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting) {
-          console.log('Intersection observer triggered, loading more games');
-          loadMoreGames();
+        if (entry.isIntersecting && hasMoreGames && !isLoading) {
+          console.log('Intersection observer triggered - loading next batch');
+          loadNextBatch(false);
         }
       },
       { 
@@ -195,27 +213,16 @@ const GameGrid: React.FC<GameGridProps> = ({
         observerRef.current.disconnect();
       }
     };
-  }, [loadMoreGames, allLoaded, filteredGames.length]);
+  }, [hasMoreGames, isLoading, loadNextBatch]);
 
-  // Filter games when filter changes
+  // Cleanup timeout on unmount
   useEffect(() => {
-    console.log('Filter changed, filtering games and resetting state');
-    const filtered = filterGames();
-    setGames([]);
-    setCurrentPage(1);
-    setAllLoaded(false);
-    setInitialLoading(true);
-  }, [filter, filterGames]);
-
-  // Load initial games when filtered games change
-  useEffect(() => {
-    if (filteredGames.length > 0 && games.length === 0) {
-      loadGames(1, true);
-    } else if (filteredGames.length === 0) {
-      setInitialLoading(false);
-      setAllLoaded(true);
-    }
-  }, [filteredGames, games.length, loadGames]);
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (initialLoading) {
     return (
@@ -227,7 +234,7 @@ const GameGrid: React.FC<GameGridProps> = ({
     );
   }
   
-  if (games.length === 0 && !loading) {
+  if (displayedGames.length === 0 && !isLoading) {
     return (
       <div className={`mb-6 ${className}`}>
         <div className="bg-gray-900 rounded-lg p-8 text-center border border-gray-800">
@@ -242,16 +249,27 @@ const GameGrid: React.FC<GameGridProps> = ({
     <div className={`mb-6 ${className}`}>
       {/* Grid of game cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {games.map((game, index) => (
-          <GameCard key={`${game.id}-${index}`} game={game} />
+        {displayedGames.map((game, index) => (
+          <div
+            key={`${game.id}-${index}`}
+            className="animate-fade-in"
+            style={{
+              animationDelay: `${(index % itemsPerPage) * 100}ms`
+            }}
+          >
+            <GameCard game={game} />
+          </div>
         ))}
       </div>
       
       {/* Loading indicator and infinite scroll trigger */}
-      {!allLoaded && (
+      {hasMoreGames && (
         <div ref={loadingRef} className="pt-8 flex justify-center">
-          {loading ? (
-            <LoadingIndicator />
+          {isLoading ? (
+            <div className="flex flex-col items-center space-y-4">
+              <LoadingIndicator />
+              <p className="text-gray-400 text-sm">Loading more games...</p>
+            </div>
           ) : (
             <div className="h-8 w-full flex items-center justify-center text-gray-500 text-sm">
               Scroll down for more games...
@@ -260,10 +278,10 @@ const GameGrid: React.FC<GameGridProps> = ({
         </div>
       )}
       
-      {allLoaded && games.length > 0 && (
+      {!hasMoreGames && displayedGames.length > 0 && (
         <div className="flex justify-center mt-8">
           <div className="text-gray-500 text-sm">
-            Showing all {totalGames} games
+            Showing all {displayedGames.length} games
           </div>
         </div>
       )}
