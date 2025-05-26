@@ -1,18 +1,25 @@
 
 import React from 'react';
+import GameCarousel from '../GameCarousel';
 import { Game } from '../../types';
-import HeroGallery from './HeroGallery';
+import LoadingIndicator from '../LoadingIndicator';
 
 interface HeroSectionProps {
   featuredGames: Game[];
   isLoading: boolean;
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ featuredGames, isLoading }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ featuredGames, isLoading }) => {
   return (
-    <section className="mb-8">
-      <HeroGallery featuredGames={featuredGames} isLoading={isLoading} />
-    </section>
+    <div className="w-full">
+      {isLoading ? (
+        <div className="aspect-[16/6] bg-gray-900 animate-pulse rounded-lg">
+          <LoadingIndicator />
+        </div>
+      ) : (
+        <GameCarousel games={featuredGames} title="FEATURED GAMES" />
+      )}
+    </div>
   );
 };
 
