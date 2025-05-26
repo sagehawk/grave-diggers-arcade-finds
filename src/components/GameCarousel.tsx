@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Game } from '../types';
 import { Link } from 'react-router-dom';
@@ -38,6 +37,16 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
       }
     };
   }, [games.length]);
+
+  // Auto-scroll thumbnails to keep current item visible
+  useEffect(() => {
+    // If current index is outside visible range, adjust thumbnail start
+    if (currentIndex < thumbnailStart) {
+      setThumbnailStart(currentIndex);
+    } else if (currentIndex >= thumbnailStart + MAX_THUMBNAILS) {
+      setThumbnailStart(Math.max(0, currentIndex - MAX_THUMBNAILS + 1));
+    }
+  }, [currentIndex]);
   
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => (prevIndex === 0 ? games.length - 1 : prevIndex - 1));
@@ -76,7 +85,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   
   return (
     <div className="relative w-full mb-8">
-      {/* Main carousel display - made thinner */}
+      {/* Main carousel display */}
       <div className="relative h-[300px] overflow-hidden group rounded-lg border border-gray-800">
         {/* Full-sized background image */}
         <Link to={`/games/${currentGame.id}`} className="block w-full h-full">
@@ -144,7 +153,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
         </button>
       </div>
       
-      {/* Thumbnail navigation - made much thinner */}
+      {/* Thumbnail navigation - responsive height */}
       <div className="flex bg-ggrave-darkgray relative rounded-b-lg border-x border-b border-gray-800">
         {/* Thumbnail scroll arrows */}
         {thumbnailStart > 0 && (
@@ -165,7 +174,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
           </button>
         )}
         
-        {/* Thumbnails - made much thinner */}
+        {/* Thumbnails - responsive height */}
         <div className="flex flex-grow overflow-hidden">
           {games.slice(thumbnailStart, thumbnailStart + MAX_THUMBNAILS).map((game, idx) => {
             const actualIndex = thumbnailStart + idx;
@@ -175,16 +184,16 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
               <button
                 key={game.id}
                 onClick={() => goToSlide(actualIndex)}
-                className={`flex-1 h-12 relative transition-all duration-300 ${isActive ? 'ring-2 ring-ggrave-red' : 'hover:opacity-100'}`}
+                className={`flex-1 h-16 md:h-20 lg:h-24 relative transition-all duration-300 ${isActive ? 'ring-2 ring-ggrave-red' : 'hover:opacity-100'}`}
               >
                 <img 
                   src={game.thumbnail}
                   alt={game.title}
                   className="w-full h-full object-cover"
                 />
-                {/* Overlay for inactive thumbnails - made much darker */}
+                {/* Overlay for inactive thumbnails - much darker */}
                 {!isActive && (
-                  <div className="absolute inset-0 bg-black/70 hover:bg-black/50 transition-all duration-300"></div>
+                  <div className="absolute inset-0 bg-black/80 hover:bg-black/60 transition-all duration-300"></div>
                 )}
                 {/* Active indicator */}
                 {isActive && (
