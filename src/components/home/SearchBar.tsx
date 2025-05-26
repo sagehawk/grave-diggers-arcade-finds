@@ -2,8 +2,14 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, Filter } from 'lucide-react';
+import { Search, X, Filter, ChevronDown } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import FilterPanel from '../FilterPanel';
 import CommunityBuzzSection from '../CommunityBuzzSection';
 import { FilterState } from '../../types';
@@ -17,6 +23,21 @@ interface SearchBarProps {
   onFilterChange: (filter: FilterState) => void;
 }
 
+const timeframes = [
+  { label: "All Time", value: "allTime" },
+  { label: "Last 30 Days", value: "month" },
+  { label: "Last 7 Days", value: "week" },
+  { label: "Today", value: "today" }
+];
+
+const sortOptions = [
+  { label: "Trending", value: "trending" },
+  { label: "Newest", value: "newest" },
+  { label: "Most Viewed", value: "mostViewed" },
+  { label: "Highest Rated", value: "highestRated" },
+  { label: "Most Liked", value: "mostLiked" }
+];
+
 export const SearchBar: React.FC<SearchBarProps> = ({
   searchInput,
   setSearchInput,
@@ -25,9 +46,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   filter,
   onFilterChange
 }) => {
+  const handleTimeframeChange = (value: string) => {
+    onFilterChange({
+      ...filter,
+      timeFrame: value as FilterState['timeFrame']
+    });
+  };
+
+  const handleSortChange = (value: string) => {
+    onFilterChange({
+      ...filter,
+      sortBy: value as FilterState['sortBy']
+    });
+  };
+
   return (
     <div className="mt-8 mb-4">
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form onSubmit={handleSearch} className="flex gap-2 mb-4">
         <div className="relative flex-1">
           <Input 
             type="text"
@@ -83,6 +118,63 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </SheetContent>
         </Sheet>
       </form>
+
+      {/* Prominent Filter Dropdowns */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        {/* Sort By Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 justify-between min-w-[140px]"
+            >
+              <span className="flex items-center">
+                <span className="text-gray-400 mr-2">Sort:</span>
+                {sortOptions.find(s => s.value === filter.sortBy)?.label || 'Trending'}
+              </span>
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-gray-800 border-gray-700 z-50">
+            {sortOptions.map(sort => (
+              <DropdownMenuItem 
+                key={sort.value} 
+                className="text-white hover:bg-gray-700 cursor-pointer"
+                onClick={() => handleSortChange(sort.value)}
+              >
+                {sort.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        {/* Time Period Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 justify-between min-w-[140px]"
+            >
+              <span className="flex items-center">
+                <span className="text-gray-400 mr-2">Time:</span>
+                {timeframes.find(t => t.value === filter.timeFrame)?.label || 'All Time'}
+              </span>
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-gray-800 border-gray-700 z-50">
+            {timeframes.map(timeframe => (
+              <DropdownMenuItem 
+                key={timeframe.value} 
+                className="text-white hover:bg-gray-700 cursor-pointer"
+                onClick={() => handleTimeframeChange(timeframe.value)}
+              >
+                {timeframe.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };
