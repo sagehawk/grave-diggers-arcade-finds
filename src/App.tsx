@@ -19,7 +19,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="max-w-[1440px] mx-auto">
+        <div className="max-w-7xl mx-auto">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/games/:id" element={<GameDetail />} />
