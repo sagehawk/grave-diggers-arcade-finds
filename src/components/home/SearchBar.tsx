@@ -119,27 +119,28 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         </Sheet>
       </form>
 
-      {/* Prominent Filter Dropdowns */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+      {/* Prominent Filter Dropdowns - Made smaller */}
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         {/* Sort By Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
-              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 justify-between min-w-[140px]"
+              size="sm"
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 justify-between text-xs"
             >
               <span className="flex items-center">
-                <span className="text-gray-400 mr-2">Sort:</span>
+                <span className="text-gray-400 mr-1">Sort:</span>
                 {sortOptions.find(s => s.value === filter.sortBy)?.label || 'Trending'}
               </span>
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-gray-800 border-gray-700 z-50">
             {sortOptions.map(sort => (
               <DropdownMenuItem 
                 key={sort.value} 
-                className="text-white hover:bg-gray-700 cursor-pointer"
+                className="text-white hover:bg-gray-700 cursor-pointer text-xs"
                 onClick={() => handleSortChange(sort.value)}
               >
                 {sort.label}
@@ -153,20 +154,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
-              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 justify-between min-w-[140px]"
+              size="sm"
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 justify-between text-xs"
             >
               <span className="flex items-center">
-                <span className="text-gray-400 mr-2">Time:</span>
+                <span className="text-gray-400 mr-1">Time:</span>
                 {timeframes.find(t => t.value === filter.timeFrame)?.label || 'All Time'}
               </span>
-              <ChevronDown className="ml-2 h-4 w-4" />
+              <ChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-gray-800 border-gray-700 z-50">
             {timeframes.map(timeframe => (
               <DropdownMenuItem 
                 key={timeframe.value} 
-                className="text-white hover:bg-gray-700 cursor-pointer"
+                className="text-white hover:bg-gray-700 cursor-pointer text-xs"
                 onClick={() => handleTimeframeChange(timeframe.value)}
               >
                 {timeframe.label}
