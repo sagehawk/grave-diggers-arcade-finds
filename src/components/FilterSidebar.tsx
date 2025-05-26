@@ -10,7 +10,6 @@ interface FilterSidebarProps {
 
 const FilterSidebar: React.FC<FilterSidebarProps> = ({ filter, onFilterChange }) => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    sort: true,
     genres: true,
     platforms: true,
     price: false,
@@ -97,60 +96,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filter, onFilterChange })
         >
           Reset All
         </button>
-      </div>
-      
-      {/* Sort By */}
-      <div className="border-b border-gray-800">
-        <div 
-          className="p-4 flex justify-between items-center cursor-pointer hover:bg-black"
-          onClick={() => toggleSection('sort')}
-        >
-          <h4 className="text-white text-sm font-medium">Sort By</h4>
-          {expandedSections.sort ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
-        
-        {expandedSections.sort && (
-          <div className="p-4 pt-0 space-y-2">
-            <div className="flex items-center">
-              <select 
-                className="w-full bg-ggrave-black text-white text-sm border border-gray-700 rounded-sm p-2"
-                value={filter.sortBy}
-                onChange={(e) => onFilterChange({
-                  ...filter,
-                  sortBy: e.target.value as FilterState['sortBy']
-                })}
-              >
-                <option value="trending">Trending</option>
-                <option value="mostViewed">Most Viewed</option>
-                <option value="mostLiked">Most Liked</option>
-                <option value="highestRated">Highest Rated</option>
-                <option value="newest">Newest Added</option>
-                <option value="releaseDate">Release Date</option>
-                <option value="priceAsc">Price: Low to High</option>
-                <option value="priceDesc">Price: High to Low</option>
-              </select>
-            </div>
-            
-            {(filter.sortBy === 'trending' || filter.sortBy === 'mostViewed' || filter.sortBy === 'mostLiked') && (
-              <div className="flex items-center mt-2">
-                <select 
-                  className="w-full bg-ggrave-black text-white text-sm border border-gray-700 rounded-sm p-2"
-                  value={filter.timeFrame}
-                  onChange={(e) => onFilterChange({
-                    ...filter,
-                    timeFrame: e.target.value as FilterState['timeFrame']
-                  })}
-                >
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="quarter">This Quarter</option>
-                  <option value="allTime">All Time</option>
-                </select>
-              </div>
-            )}
-          </div>
-        )}
       </div>
       
       {/* Genres */}
