@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { FilterState, Genre, Platform } from '../types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -18,8 +17,6 @@ interface FilterPanelProps {
 const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, className = '' }) => {
   // State for expanded sections
   const [expandedSections, setExpandedSections] = useState({
-    sort: true,
-    timeFrame: true,
     genres: true,
     platforms: true,
     freeGames: true,
@@ -180,84 +177,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
         <Filter size={16} className="mr-2" />
         FILTERS
       </h3>
-      
-      {/* Sort By Section */}
-      <div className="mb-4">
-        <button 
-          className="w-full flex justify-between items-center text-white text-sm mb-2"
-          onClick={() => toggleSection('sort')}
-        >
-          <FilterSectionHeader 
-            icon={Check} 
-            title="SORT BY" 
-            isExpanded={expandedSections.sort} 
-          />
-        </button>
-        
-        {expandedSections.sort && (
-          <div className="space-y-2 mt-3 ml-1">
-            {[
-              { value: 'trending', label: 'Trending' },
-              { value: 'mostViewed', label: 'Most Viewed' },
-              { value: 'mostLiked', label: 'Most Liked' },
-              { value: 'newest', label: 'Recently Added' }
-            ].map((option) => (
-              <div key={option.value} className="flex items-center">
-                <button
-                  className={`text-sm py-1 w-full text-left ${
-                    filter.sortBy === option.value 
-                      ? 'text-ggrave-red font-medium' 
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                  onClick={() => handleSortByChange(option.value as FilterState['sortBy'])}
-                >
-                  {option.label}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {/* Time Frame Section */}
-      <div className="mb-4">
-        <button 
-          className="w-full flex justify-between items-center text-white text-sm mb-2"
-          onClick={() => toggleSection('timeFrame')}
-        >
-          <FilterSectionHeader 
-            icon={Clock} 
-            title="TIME PERIOD" 
-            isExpanded={expandedSections.timeFrame} 
-          />
-        </button>
-        
-        {expandedSections.timeFrame && (
-          <div className="space-y-2 mt-3 ml-1">
-            {[
-              { value: 'allTime', label: 'All Time' },
-              { value: 'today', label: 'Last 24 Hours' },
-              { value: 'week', label: 'Past Week' },
-              { value: 'month', label: 'Past Month' },
-              { value: 'quarter', label: 'Past 3 Months' },
-              { value: 'year', label: 'Past Year' }
-            ].map((option) => (
-              <div key={option.value} className="flex items-center">
-                <button
-                  className={`text-sm py-1 w-full text-left ${
-                    filter.timeFrame === option.value 
-                      ? 'text-ggrave-red font-medium' 
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                  onClick={() => handleTimeFrameChange(option.value as FilterState['timeFrame'])}
-                >
-                  {option.label}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
       
       {/* Genres Section */}
       <div className="mb-4">
