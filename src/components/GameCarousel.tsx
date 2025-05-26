@@ -76,8 +76,8 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   
   return (
     <div className="relative w-full mb-8">
-      {/* Main carousel display */}
-      <div className="relative h-[400px] overflow-hidden group rounded-lg border border-gray-800">
+      {/* Main carousel display - made thinner */}
+      <div className="relative h-[300px] overflow-hidden group rounded-lg border border-gray-800">
         {/* Full-sized background image */}
         <Link to={`/games/${currentGame.id}`} className="block w-full h-full">
           <div 
@@ -144,28 +144,28 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
         </button>
       </div>
       
-      {/* Thumbnail navigation with enhanced styling */}
+      {/* Thumbnail navigation - made much thinner */}
       <div className="flex bg-ggrave-darkgray relative rounded-b-lg border-x border-b border-gray-800">
         {/* Thumbnail scroll arrows */}
         {thumbnailStart > 0 && (
           <button 
             onClick={scrollThumbnailsLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-2 z-10 rounded-r transition-all"
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-1.5 z-10 rounded-r transition-all"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
           </button>
         )}
         
         {thumbnailStart + MAX_THUMBNAILS < games.length && (
           <button 
             onClick={scrollThumbnailsRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-2 z-10 rounded-l transition-all"
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-1.5 z-10 rounded-l transition-all"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         )}
         
-        {/* Thumbnails */}
+        {/* Thumbnails - made much thinner */}
         <div className="flex flex-grow overflow-hidden">
           {games.slice(thumbnailStart, thumbnailStart + MAX_THUMBNAILS).map((game, idx) => {
             const actualIndex = thumbnailStart + idx;
@@ -175,16 +175,16 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
               <button
                 key={game.id}
                 onClick={() => goToSlide(actualIndex)}
-                className={`flex-1 h-20 relative transition-all duration-300 ${isActive ? 'ring-2 ring-ggrave-red' : 'hover:opacity-100'}`}
+                className={`flex-1 h-12 relative transition-all duration-300 ${isActive ? 'ring-2 ring-ggrave-red' : 'hover:opacity-100'}`}
               >
                 <img 
                   src={game.thumbnail}
                   alt={game.title}
                   className="w-full h-full object-cover"
                 />
-                {/* Overlay for inactive thumbnails */}
+                {/* Overlay for inactive thumbnails - made much darker */}
                 {!isActive && (
-                  <div className="absolute inset-0 bg-black/50 hover:bg-black/20 transition-all duration-300"></div>
+                  <div className="absolute inset-0 bg-black/70 hover:bg-black/50 transition-all duration-300"></div>
                 )}
                 {/* Active indicator */}
                 {isActive && (
