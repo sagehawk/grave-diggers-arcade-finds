@@ -153,7 +153,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
         </button>
       </div>
       
-      {/* Thumbnail navigation - responsive height */}
+      {/* Thumbnail navigation - made slightly thinner */}
       <div className="flex bg-ggrave-darkgray relative rounded-b-lg border-x border-b border-gray-800">
         {/* Thumbnail scroll arrows */}
         {thumbnailStart > 0 && (
@@ -174,7 +174,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
           </button>
         )}
         
-        {/* Thumbnails - responsive height */}
+        {/* Thumbnails - slightly thinner */}
         <div className="flex flex-grow overflow-hidden">
           {games.slice(thumbnailStart, thumbnailStart + MAX_THUMBNAILS).map((game, idx) => {
             const actualIndex = thumbnailStart + idx;
@@ -184,7 +184,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
               <button
                 key={game.id}
                 onClick={() => goToSlide(actualIndex)}
-                className={`flex-1 h-16 md:h-20 lg:h-24 relative transition-all duration-300 ${isActive ? 'ring-2 ring-ggrave-red' : 'hover:opacity-100'}`}
+                className={`flex-1 h-12 md:h-16 lg:h-20 relative transition-all duration-300 ${isActive ? 'ring-2 ring-ggrave-red' : 'hover:opacity-100'}`}
               >
                 <img 
                   src={game.thumbnail}
