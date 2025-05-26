@@ -112,23 +112,23 @@ const HeroGallery: React.FC<HeroGalleryProps> = ({ featuredGames, isLoading }) =
       </div>
 
       {/* Mini Gallery - Thumbnail Navigation */}
-      <div className="flex bg-gray-900 relative rounded-b-lg border-x border-b border-gray-800 mt-2">
+      <div className="flex bg-gray-900 relative rounded-b-lg border-x border-b border-gray-800">
         {/* Thumbnail scroll arrows */}
         {thumbnailStart > 0 && (
           <button 
             onClick={scrollThumbnailsLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-2 z-10 rounded-r transition-all"
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-1 z-10 rounded-r transition-all"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
           </button>
         )}
         
         {thumbnailStart + MAX_THUMBNAILS < featuredGames.length && (
           <button 
             onClick={scrollThumbnailsRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-2 z-10 rounded-l transition-all"
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/80 text-white p-1 z-10 rounded-l transition-all"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         )}
         
@@ -142,7 +142,7 @@ const HeroGallery: React.FC<HeroGalleryProps> = ({ featuredGames, isLoading }) =
               <button
                 key={game.id}
                 onClick={() => goToSlide(actualIndex)}
-                className={`flex-1 h-20 relative transition-all duration-300 ${isActive ? 'ring-2 ring-red-600' : 'hover:opacity-100'}`}
+                className={`flex-1 h-12 relative transition-all duration-300 ${isActive ? 'ring-2 ring-red-600' : 'hover:opacity-100'}`}
               >
                 <img 
                   src={game.thumbnail}
@@ -151,7 +151,7 @@ const HeroGallery: React.FC<HeroGalleryProps> = ({ featuredGames, isLoading }) =
                 />
                 {/* Overlay for inactive thumbnails */}
                 {!isActive && (
-                  <div className="absolute inset-0 bg-black/50 hover:bg-black/20 transition-all duration-300"></div>
+                  <div className="absolute inset-0 bg-black/70 hover:bg-black/40 transition-all duration-300"></div>
                 )}
                 {/* Active indicator */}
                 {isActive && (
