@@ -59,7 +59,7 @@ You will need to have Node.js and npm installed on your machine. You will also n
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/your-username/gamergrave.git
+    git clone https://github.com/sagehawk/grave-diggers-arcade-finds.git
     ```
 
 2.  **Navigate to the project directory:**
