@@ -1,15 +1,55 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Eye, Heart, MessageSquare, Download, Calendar, Construction } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { portfolioGames } from '../data/portfolioGamesData';
+import { getGameDetails } from '../services/rawgService';
+import { Game } from '../types';
 
 const GameDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  
-  // Find the game from portfolio data
-  const game = portfolioGames.find(g => g.id === id);
+  const [game, setGame] = useState<Game | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchGameDetails = async () => {
+      if (!id) return;
+      try {
+        const gameDetails = await getGameDetails(id);
+        setGame(gameDetails);
+      } catch (err) {
+        setError('Failed to fetch game details.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGameDetails();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-[#111111] text-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-[#111111] text-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">{error}</h1>
+          <Link to="/" className="text-ggrave-red hover:underline">
+            Return to Homepage
+          </Link>
+        </div>
+      </div>
+    );
+  }
   
   if (!game) {
     return (
@@ -41,8 +81,8 @@ const GameDetail: React.FC = () => {
       <div className="relative">
         <div className="aspect-video w-full max-h-96 overflow-hidden">
           <img 
-            src={game.banner || game.thumbnail} 
-            alt={game.title}
+            src={game.background_image || game.background_image_additional} 
+            alt={game.name}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#111111] to-transparent" />
@@ -51,24 +91,24 @@ const GameDetail: React.FC = () => {
         {/* Game title overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="container mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold mb-2">{game.title}</h1>
-            <p className="text-xl text-gray-300 mb-4">by {game.developer}</p>
+            <h1 className="text-4xl md:text-6xl font-bold mb-2">{game.name}</h1>
+            <p className="text-xl text-gray-300 mb-4">by {game.developers?.map(d => d.name).join(', ')}</p>
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center">
                 <Eye size={16} className="mr-1" />
-                {game.views?.toLocaleString()} views
+                {game.added?.toLocaleString()} views
               </div>
               <div className="flex items-center">
                 <Heart size={16} className="mr-1" />
-                {game.likes?.toLocaleString()} likes
+                {game.ratings_count?.toLocaleString()} likes
               </div>
               <div className="flex items-center">
                 <MessageSquare size={16} className="mr-1" />
-                {game.comments?.toLocaleString()} comments
+                {game.reviews_count?.toLocaleString()} comments
               </div>
               <div className="flex items-center">
                 <Calendar size={16} className="mr-1" />
-                {new Date(game.releaseDate).toLocaleDateString()}
+                {new Date(game.released).toLocaleDateString()}
               </div>
             </div>
           </div>
@@ -99,15 +139,15 @@ const GameDetail: React.FC = () => {
               <div className="bg-[#181818] border border-gray-800 rounded-lg p-6 space-y-4">
                 <div>
                   <label className="text-sm text-gray-400 block mb-1">Description</label>
-                  <p className="text-gray-200">{game.description}</p>
+                  <p className="text-gray-200">{game.description_raw}</p>
                 </div>
                 
                 <div>
                   <label className="text-sm text-gray-400 block mb-1">Genres</label>
                   <div className="flex flex-wrap gap-2">
-                    {game.genre.map((genre, index) => (
+                    {game.genres?.map((genre, index) => (
                       <span key={index} className="px-3 py-1 bg-[#222222] rounded-full text-sm">
-                        {genre}
+                        {genre.name}
                       </span>
                     ))}
                   </div>
@@ -116,29 +156,20 @@ const GameDetail: React.FC = () => {
                 <div>
                   <label className="text-sm text-gray-400 block mb-1">Platforms</label>
                   <div className="flex flex-wrap gap-2">
-                    {game.platforms.map((platform, index) => (
+                    {game.platforms?.map((platform, index) => (
                       <span key={index} className="px-3 py-1 bg-[#222222] rounded-full text-sm">
-                        {platform}
+                        {platform.platform.name}
                       </span>
                     ))}
                   </div>
                 </div>
                 
-                <div>
-                  <label className="text-sm text-gray-400 block mb-1">Price</label>
-                  <p className="text-green-400 font-semibold">
-                    {typeof game.price === 'string' ? game.price : `$${game.price}`}
-                  </p>
-                </div>
+                
                 
                 <div>
                   <label className="text-sm text-gray-400 block mb-1">Release Status</label>
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm ${
-                    game.releaseStatus === 'Released' ? 'bg-green-900/30 text-green-300 border border-green-700' :
-                    game.releaseStatus === 'Early Access' ? 'bg-blue-900/30 text-blue-300 border border-blue-700' :
-                    'bg-gray-900/30 text-gray-300 border border-gray-700'
-                  }`}>
-                    {game.releaseStatus}
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm`}>
+                    {game.released}
                   </span>
                 </div>
               </div>
@@ -163,19 +194,19 @@ const GameDetail: React.FC = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Views:</span>
-                      <span>{game.views?.toLocaleString()}</span>
+                      <span>{game.added?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Likes:</span>
-                      <span>{game.likes?.toLocaleString()}</span>
+                      <span>{game.ratings_count?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Comments:</span>
-                      <span>{game.comments?.toLocaleString()}</span>
+                      <span>{game.reviews_count?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Release Date:</span>
-                      <span>{new Date(game.releaseDate).toLocaleDateString()}</span>
+                      <span>{new Date(game.released).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>

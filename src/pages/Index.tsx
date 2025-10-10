@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { FilterState } from '../types';
+import { FilterState, Game } from '../types';
 
 // Import refactored components
 import HeroSection from '../components/home/HeroSection';
@@ -9,7 +10,7 @@ import SearchBar from '../components/home/SearchBar';
 import MainContent from '../components/home/MainContent';
 import SidebarContent from '../components/home/SidebarContent';
 import PageFooter from '../components/home/PageFooter';
-import { portfolioFeaturedGames } from '../data/portfolioGamesData';
+import { getGames, getGamesByTimeframe } from '../services/rawgService';
 
 const Index: React.FC = () => {
   const [filter, setFilter] = useState<FilterState>({
@@ -24,6 +25,27 @@ const Index: React.FC = () => {
   
   // State for search input
   const [searchInput, setSearchInput] = useState('');
+  const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
+  const [allGames, setAllGames] = useState<Game[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      const [today, week, month, allTime, all] = await Promise.all([
+        getGamesByTimeframe('today'),
+        getGamesByTimeframe('week'),
+        getGamesByTimeframe('month'),
+        getGamesByTimeframe('allTime'),
+        getGames(),
+      ]);
+
+      setFeaturedGames([...today, ...week, ...month, ...allTime]);
+      setAllGames(all);
+      setIsLoading(false);
+    };
+
+    fetchGames();
+  }, []);
   
   // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
@@ -57,7 +79,7 @@ const Index: React.FC = () => {
             {/* Left Column Area (Wider) */}
             <div className="w-full md:w-2/3">
               {/* Top: Hero Gallery */}
-              <HeroSection featuredGames={portfolioFeaturedGames} isLoading={false} />
+              <HeroSection featuredGames={featuredGames} isLoading={isLoading} />
               
               {/* Search bar and filter button */}
               <SearchBar 
@@ -70,7 +92,7 @@ const Index: React.FC = () => {
               />
               
               {/* Main content with filters and game grid */}
-              <MainContent filter={filter} onFilterChange={setFilter} />
+              <MainContent filter={filter} onFilterChange={setFilter} games={allGames} />
             </div>
             
             {/* Right Column Area (Narrower) - The continuous sidebar */}

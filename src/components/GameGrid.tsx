@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Game } from '../types';
-import { portfolioGames } from '../data/portfolioGamesData';
+
 import GameGridDisplay from './GameGrid/GameGridDisplay';
 import useGameFiltering from './GameGrid/useGameFiltering';
 import useInfiniteScroll from './GameGrid/useInfiniteScroll';
@@ -14,6 +14,7 @@ interface GameGridProps {
   className?: string;
   itemsPerPage?: number;
   SampleDataLoader?: React.ComponentType;
+  games: Game[];
 }
 
 const GameGrid: React.FC<GameGridProps> = ({ 
@@ -22,17 +23,17 @@ const GameGrid: React.FC<GameGridProps> = ({
   viewAllLink, 
   className = '',
   itemsPerPage = 9,
-  SampleDataLoader
+  SampleDataLoader,
+  games
 }) => {
+  console.log('GameGrid games prop:', games);
   const [displayedGames, setDisplayedGames] = useState<Game[]>([]);
   const [currentBatch, setCurrentBatch] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [hasMoreGames, setHasMoreGames] = useState(true);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Custom hooks for game filtering and loading logic
-  const filteredGames = useGameFiltering(filter, portfolioGames);
+  const filteredGames = useGameFiltering(filter, games);
   
   const { loadNextBatch } = useGameLoading({
     filteredGames,
@@ -53,6 +54,10 @@ const GameGrid: React.FC<GameGridProps> = ({
     initialLoading,
     loadNextBatch
   });
+
+  useEffect(() => {
+    setInitialLoading(true);
+  }, [games]);
 
   // Reset everything when filter changes
   useEffect(() => {
@@ -81,7 +86,7 @@ const GameGrid: React.FC<GameGridProps> = ({
       setInitialLoading(false);
       setHasMoreGames(false);
     }
-  }, [filteredGames, initialLoading, loadNextBatch]);
+  }, [filteredGames, initialLoading, loadNextBatch, games]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

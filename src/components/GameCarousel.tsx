@@ -8,9 +8,21 @@ interface GameCarouselProps {
   title: string;
 }
 
-const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
+export const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeFrame, setTimeFrame] = useState<'today' | 'week' | 'month' | 'allTime'>('today');
+
+  useEffect(() => {
+    if (currentIndex >= 0 && currentIndex < 3) {
+      setTimeFrame('today');
+    } else if (currentIndex >= 3 && currentIndex < 6) {
+      setTimeFrame('week');
+    } else if (currentIndex >= 6 && currentIndex < 9) {
+      setTimeFrame('month');
+    } else {
+      setTimeFrame('allTime');
+    }
+  }, [currentIndex]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [thumbnailStart, setThumbnailStart] = useState(0);
   
@@ -91,7 +103,7 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
         <Link to={`/games/${currentGame.id}`} className="block w-full h-full">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300 hover:scale-105"
-            style={{ backgroundImage: `url(${currentGame.banner || currentGame.thumbnail})` }}
+            style={{ backgroundImage: `url(${currentGame.background_image})` }}
           />
           
           {/* Reduced gradient overlay for text visibility */}
@@ -104,20 +116,22 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
           
           {/* Developer avatar in top right */}
           <div className="absolute top-4 right-4 z-10">
-            <Link to={`/developer/${currentGame.developer}`} className="block">
+            {currentGame.developers && currentGame.developers.length > 0 && (
+            <Link to={`/developer/${currentGame.developers[0]?.slug}`} className="block">
               <div className="w-12 h-12 rounded-full bg-gray-300 border-2 border-white/80 overflow-hidden shadow-lg hover:scale-110 transition-transform">
                 <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-white text-sm font-bold">
-                  {currentGame.developer.substring(0, 2).toUpperCase()}
+                  {currentGame.developers[0]?.name.substring(0, 2).toUpperCase()}
                 </div>
               </div>
             </Link>
+          )}
           </div>
           
           {/* Game title on bottom left with improved styling */}
           <div className="absolute bottom-16 left-0 max-w-2xl z-10">
             <div className="bg-black/70 backdrop-blur-sm p-4 rounded-r-lg border-l-4 border-ggrave-red">
-              <h2 className="text-white font-bold text-xl md:text-2xl mb-1">{currentGame.title}</h2>
-              <h3 className="text-gray-300 text-sm font-medium">{currentGame.developer}</h3>
+              <h2 className="text-white font-bold text-xl md:text-2xl mb-1">{currentGame.name}</h2>
+              <h3 className="text-gray-300 text-sm font-medium">{currentGame.developers?.map(dev => dev.name).join(', ')}</h3>
             </div>
           </div>
           
@@ -125,15 +139,15 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
           <div className="absolute bottom-4 right-4 flex items-center space-x-4 bg-black/70 backdrop-blur-sm p-3 rounded-lg z-10 border border-gray-700">
             <div className="flex items-center">
               <Heart size={16} className="text-red-500 mr-1.5" />
-              <span className="text-white text-sm font-medium">{currentGame.likes}</span>
+              <span className="text-white text-sm font-medium">{currentGame.ratings_count}</span>
             </div>
             <div className="flex items-center">
               <Eye size={16} className="text-blue-400 mr-1.5" />
-              <span className="text-white text-sm font-medium">{currentGame.views}</span>
+              <span className="text-white text-sm font-medium">{currentGame.added}</span>
             </div>
             <div className="flex items-center">
               <MessageSquare size={16} className="text-green-400 mr-1.5" />
-              <span className="text-white text-sm font-medium">{currentGame.comments}</span>
+              <span className="text-white text-sm font-medium">{currentGame.reviews_count}</span>
             </div>
           </div>
         </Link>
@@ -182,13 +196,13 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
             
             return (
               <button
-                key={game.id}
+                key={`${game.id}-${idx}`}
                 onClick={() => goToSlide(actualIndex)}
                 className={`flex-1 h-12 md:h-16 lg:h-20 relative transition-all duration-300 ${isActive ? 'ring-2 ring-ggrave-red' : 'hover:opacity-100'}`}
               >
                 <img 
-                  src={game.thumbnail}
-                  alt={game.title}
+                  src={game.background_image}
+                  alt={game.name}
                   className="w-full h-full object-cover"
                 />
                 {/* Overlay for inactive thumbnails - much darker */}
@@ -208,4 +222,4 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ games, title }) => {
   );
 };
 
-export default GameCarousel;
+

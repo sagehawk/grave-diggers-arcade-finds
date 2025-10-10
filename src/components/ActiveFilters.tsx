@@ -42,7 +42,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
   const removeGenre = (genre: Genre) => {
     onFilterChange({
       ...filter,
-      genres: filter.genres.filter(g => g !== genre)
+      genres: filter.genres.filter(g => g.id !== genre.id)
     });
   };
 
@@ -50,7 +50,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
   const removePlatform = (platform: Platform) => {
     onFilterChange({
       ...filter,
-      platforms: filter.platforms.filter(p => p !== platform)
+      platforms: filter.platforms.filter(p => p.id !== platform.id)
     });
   };
 
@@ -124,13 +124,13 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
 
       {/* Genre pills */}
       {filter.genres.map(genre => (
-        <div key={`genre-${genre}`} className="flex items-center bg-ggrave-darkgray rounded-full px-3 py-1 text-sm text-white">
+        <div key={`genre-${genre.id}`} className="flex items-center bg-ggrave-darkgray rounded-full px-3 py-1 text-sm text-white">
           <span className="mr-1">Genre:</span>
-          <span className="font-medium">{genre}</span>
+          <span className="font-medium">{genre.name}</span>
           <button 
             onClick={() => removeGenre(genre)}
             className="ml-2 text-gray-400 hover:text-ggrave-red"
-            aria-label={`Remove ${genre} filter`}
+            aria-label={`Remove ${genre.name} filter`}
           >
             <X size={14} />
           </button>
@@ -139,13 +139,13 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
 
       {/* Platform pills */}
       {filter.platforms.map(platform => (
-        <div key={`platform-${platform}`} className="flex items-center bg-ggrave-darkgray rounded-full px-3 py-1 text-sm text-white">
+        <div key={`platform-${platform.id}`} className="flex items-center bg-ggrave-darkgray rounded-full px-3 py-1 text-sm text-white">
           <span className="mr-1">Platform:</span>
-          <span className="font-medium">{platform}</span>
+          <span className="font-medium">{platform.name}</span>
           <button 
             onClick={() => removePlatform(platform)}
             className="ml-2 text-gray-400 hover:text-ggrave-red"
-            aria-label={`Remove ${platform} filter`}
+            aria-label={`Remove ${platform.name} filter`}
           >
             <X size={14} />
           </button>

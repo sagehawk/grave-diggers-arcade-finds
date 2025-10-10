@@ -12,18 +12,18 @@ const useGameFiltering = (filter: any, games: Game[]): Game[] => {
     if (filter.searchQuery) {
       const query = filter.searchQuery.toLowerCase();
       filtered = filtered.filter(game => 
-        game.title.toLowerCase().includes(query) ||
-        game.developer.toLowerCase().includes(query) ||
-        game.description.toLowerCase().includes(query) ||
-        game.genre.some(g => g.toLowerCase().includes(query))
+        game.name.toLowerCase().includes(query) ||
+        (game.developers && game.developers.some(dev => dev.name.toLowerCase().includes(query))) ||
+        (game.description_raw && game.description_raw.toLowerCase().includes(query)) ||
+        (game.genres && game.genres.some(g => g.name.toLowerCase().includes(query)))
       );
     }
     
     // Apply genre filter
     if (filter.genres && filter.genres.length > 0) {
       filtered = filtered.filter(game =>
-        filter.genres.some((filterGenre: string) =>
-          game.genre.some(gameGenre => gameGenre.toLowerCase().includes(filterGenre.toLowerCase()))
+        game.genres && game.genres.some(gameGenre =>
+          filter.genres.some((filterGenre: any) => filterGenre.id === gameGenre.id)
         )
       );
     }
@@ -31,24 +31,9 @@ const useGameFiltering = (filter: any, games: Game[]): Game[] => {
     // Apply platform filter
     if (filter.platforms && filter.platforms.length > 0) {
       filtered = filtered.filter(game =>
-        filter.platforms.some((filterPlatform: string) =>
-          game.platforms.some(gamePlatform => gamePlatform.toLowerCase().includes(filterPlatform.toLowerCase()))
+        game.platforms && game.platforms.some(gamePlatform =>
+          filter.platforms.some((filterPlatform: any) => filterPlatform.id === gamePlatform.platform.id)
         )
-      );
-    }
-    
-    // Apply price filter
-    if (filter.priceRange) {
-      filtered = filtered.filter(game => {
-        const gamePrice = typeof game.price === 'string' ? 0 : game.price;
-        return gamePrice >= filter.priceRange[0] && gamePrice <= filter.priceRange[1];
-      });
-    }
-    
-    // Apply release status filter
-    if (filter.releaseStatus && filter.releaseStatus.length > 0) {
-      filtered = filtered.filter(game =>
-        filter.releaseStatus.includes(game.releaseStatus)
       );
     }
     
@@ -56,19 +41,19 @@ const useGameFiltering = (filter: any, games: Game[]): Game[] => {
     if (filter.sortBy) {
       switch (filter.sortBy) {
         case 'trending':
-          filtered.sort((a, b) => b.views - a.views);
+          filtered.sort((a, b) => b.added - a.added);
           break;
         case 'mostLiked':
-          filtered.sort((a, b) => b.likes - a.likes);
+          filtered.sort((a, b) => b.ratings_count - a.ratings_count);
           break;
         case 'newest':
-          filtered.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+          filtered.sort((a, b) => new Date(b.released).getTime() - new Date(a.released).getTime());
           break;
         case 'oldest':
-          filtered.sort((a, b) => new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime());
+          filtered.sort((a, b) => new Date(a.released).getTime() - new Date(b.released).getTime());
           break;
         case 'alphabetical':
-          filtered.sort((a, b) => a.title.localeCompare(b.title));
+          filtered.sort((a, b) => a.name.localeCompare(b.name));
           break;
       }
     }
