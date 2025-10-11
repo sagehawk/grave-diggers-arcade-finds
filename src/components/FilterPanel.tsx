@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Check, ChevronDown, ChevronUp, Clock, Filter } from 'lucide-react';
 import FilterSectionHeader from './filter/FilterSectionHeader';
-import { supabase } from '../lib/supabase';
+import { getGenres, getPlatforms } from '../services/rawgService';
 
 interface FilterPanelProps {
   filter: FilterState;
@@ -28,67 +28,20 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
   const [availablePlatforms, setAvailablePlatforms] = useState<{ name: string; count: number }[]>([]);
   
   useEffect(() => {
-    // Fetch genres from Supabase
-    const fetchGenres = async () => {
+    const fetchFilters = async () => {
       try {
-        const { data, error } = await supabase
-          .from('genres')
-          .select(`
-            name,
-            slug,
-            game_genres (
-              game_id
-            )
-          `);
-          
-        if (error) throw error;
-        
-        // Transform data and count games per genre
-        const genresWithCount = data.map(genre => ({
-          name: genre.name,
-          slug: genre.slug,
-          count: genre.game_genres ? genre.game_genres.length : 0
-        }));
-        
-        setAvailableGenres(genresWithCount);
+        const [genres, platforms] = await Promise.all([
+          getGenres(),
+          getPlatforms(),
+        ]);
+        setAvailableGenres(genres.map(g => ({ ...g, count: 0 })));
+        setAvailablePlatforms(platforms.map(p => ({ ...p, count: 0 })));
       } catch (error) {
-        console.error('Error fetching genres:', error);
+        console.error('Error fetching filters:', error);
       }
     };
-    
-    // Get unique platforms from games table
-    const fetchPlatforms = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('games')
-          .select('platform_tags');
-          
-        if (error) throw error;
-        
-        // Count occurrences of each platform
-        const platformCounts: Record<string, number> = {};
-        data.forEach(game => {
-          if (game.platform_tags && Array.isArray(game.platform_tags)) {
-            game.platform_tags.forEach((platform: string) => {
-              platformCounts[platform] = (platformCounts[platform] || 0) + 1;
-            });
-          }
-        });
-        
-        // Transform to array format
-        const platforms = Object.entries(platformCounts).map(([name, count]) => ({
-          name,
-          count
-        }));
-        
-        setAvailablePlatforms(platforms);
-      } catch (error) {
-        console.error('Error fetching platforms:', error);
-      }
-    };
-    
-    fetchGenres();
-    fetchPlatforms();
+
+    fetchFilters();
   }, []);
 
   // Toggle individual section expanded state
@@ -100,34 +53,34 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
   };
 
   // Handle genre selection
-  const handleGenreChange = (genre: string, selected: boolean) => {
+  const handleGenreChange = (genre: Genre, selected: boolean) => {
     let newGenres: Genre[];
-    
+
     if (selected) {
-      newGenres = [...filter.genres, genre as Genre];
+      newGenres = [...filter.genres, genre];
     } else {
-      newGenres = filter.genres.filter(g => g !== genre);
+      newGenres = filter.genres.filter((g) => g.id !== genre.id);
     }
-    
+
     onFilterChange({
       ...filter,
-      genres: newGenres
+      genres: newGenres,
     });
   };
 
   // Handle platform selection
-  const handlePlatformChange = (platform: string, selected: boolean) => {
+  const handlePlatformChange = (platform: Platform, selected: boolean) => {
     let newPlatforms: Platform[];
-    
+
     if (selected) {
-      newPlatforms = [...filter.platforms, platform as Platform];
+      newPlatforms = [...filter.platforms, platform];
     } else {
-      newPlatforms = filter.platforms.filter(p => p !== platform);
+      newPlatforms = filter.platforms.filter((p) => p.id !== platform.id);
     }
-    
+
     onFilterChange({
       ...filter,
-      platforms: newPlatforms
+      platforms: newPlatforms,
     });
   };
 
@@ -198,9 +151,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
                 <div className="flex items-center">
                   <Checkbox
                     id={`genre-${genre.slug}`}
-                    checked={filter.genres.includes(genre.slug as Genre)}
+                    checked={filter.genres.some((g) => g.id === genre.id)}
                     onCheckedChange={(checked) => 
-                      handleGenreChange(genre.slug, checked === true)
+                      handleGenreChange(genre, checked === true)
                     }
                     className="border-gray-600 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
                   />
@@ -238,9 +191,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onFilterChange, class
                 <div className="flex items-center">
                   <Checkbox
                     id={`platform-${platform.name}`}
-                    checked={filter.platforms.includes(platform.name as Platform)}
+                    checked={filter.platforms.some((p) => p.id === platform.id)}
                     onCheckedChange={(checked) => 
-                      handlePlatformChange(platform.name, checked === true)
+                      handlePlatformChange(platform, checked === true)
                     }
                     className="border-gray-600 data-[state=checked]:bg-ggrave-red data-[state=checked]:border-ggrave-red"
                   />

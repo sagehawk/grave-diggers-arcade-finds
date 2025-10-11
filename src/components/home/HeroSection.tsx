@@ -1,6 +1,6 @@
 
 import React from 'react';
-import GameCarousel from '../GameCarousel';
+import { GameCarousel } from '../GameCarousel';
 import { Game } from '../../types';
 import LoadingIndicator from '../LoadingIndicator';
 

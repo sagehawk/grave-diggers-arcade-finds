@@ -1,15 +1,16 @@
 
 import React from 'react';
-import { FilterState } from '../../types';
+import { FilterState, Game } from '../../types';
 import ActiveFilters from '../ActiveFilters';
 import GameGrid from '../GameGrid';
 
 interface MainContentProps {
   filter: FilterState;
   onFilterChange: (filter: FilterState) => void;
+  games: Game[];
 }
 
-export const MainContent: React.FC<MainContentProps> = ({ filter, onFilterChange }) => {
+export const MainContent: React.FC<MainContentProps> = ({ filter, onFilterChange, games }) => {
   return (
     <div>
       {/* Active Filters */}
@@ -31,6 +32,7 @@ export const MainContent: React.FC<MainContentProps> = ({ filter, onFilterChange
         filter={filter}
         title="" 
         viewAllLink={`/games/all`}
+        games={games}
       />
     </div>
   );
