@@ -6,7 +6,20 @@ const useGameFiltering = (filter: any, games: Game[]): Game[] => {
   return useMemo(() => {
     console.log('Filtering games with filter:', filter);
     
-    let filtered = [...games];
+    let filtered = [...games].filter(game => !!game.background_image);
+
+    filtered = filtered.filter(game => {
+      const adultKeywords = ['adult', 'hentai'];
+      const gameName = game.name.toLowerCase();
+      const gameDescription = (game.description_raw || '').toLowerCase();
+      const gameGenres = game.genres ? game.genres.map(g => g.name.toLowerCase()) : [];
+
+      if (adultKeywords.some(keyword => gameName.includes(keyword))) return false;
+      if (adultKeywords.some(keyword => gameDescription.includes(keyword))) return false;
+      if (gameGenres.some(genre => adultKeywords.some(keyword => genre.includes(keyword)))) return false;
+
+      return true;
+    });
     
     // Apply search filter
     if (filter.searchQuery) {
@@ -60,7 +73,7 @@ const useGameFiltering = (filter: any, games: Game[]): Game[] => {
     
     console.log('Filtered games count:', filtered.length);
     return filtered;
-  }, [filter.searchQuery, filter.genres, filter.platforms, filter.priceRange, filter.releaseStatus, filter.sortBy, games]);
+  }, [filter, games]);
 };
 
 export default useGameFiltering;

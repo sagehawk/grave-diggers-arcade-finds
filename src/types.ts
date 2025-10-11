@@ -24,11 +24,17 @@ export interface Game {
   platforms: { platform: Platform }[];
   parent_platforms: { platform: Platform }[];
   genres: Genre[];
-  stores: any[];
-  clip: null;
+  stores: { store: Store }[];
+  clip: { clip: string; preview: string; } | null;
   tags: any[];
   esrb_rating: any;
   short_screenshots: any[];
+}
+
+export interface Store {
+  id: number;
+  name: string;
+  slug: string;
 }
 
 export interface Platform {

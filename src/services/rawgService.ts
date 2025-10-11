@@ -17,7 +17,7 @@ const apiClient = axios.create({
 
 export const getGames = async () => {
   try {
-    const response = await apiClient.get('/games');
+    const response = await apiClient.get('/games', { params: { genres: '51', page_size: 100, ordering: '-released' } });
     return response.data.results;
   } catch (error) {
     console.error('Error fetching games:', error);
@@ -70,6 +70,7 @@ export const getGamesByTimeframe = async (timeframe: 'today' | 'week' | 'month' 
     const params: any = {
       ordering: '-released',
       page_size: 3,
+      genres: '51',
     };
 
     if (dates) {

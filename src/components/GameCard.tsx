@@ -11,6 +11,7 @@ interface GameCardProps {
   className?: string;
 }
 
+// HMR Trigger
 const GameCard: React.FC<GameCardProps> = ({ game, className }) => {
   const handleClick = () => {
     // Portfolio version - no database calls
