@@ -169,11 +169,16 @@ const GameDetail: React.FC = () => {
               <div className="container mx-auto px-4 py-12">
                 <h2 className="text-2xl font-bold mb-4">Where to Buy</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {game.stores.map((store, index) => (
-                    <a key={index} href={`https://${store.store.domain}`} target="_blank" rel="noopener noreferrer" className="bg-[#181818] border border-gray-800 rounded-lg p-4 flex items-center justify-center hover:bg-gray-800 transition-colors">
-                      <span className="text-white font-semibold">{store.store.name}</span>
-                    </a>
-                  ))}
+                  {game.stores.map((store, index) => {
+                    const url = store.store.name === 'Steam'
+                      ? `https://store.steampowered.com/search/?term=${game.name.replace(/ /g, '+')}`
+                      : `https://${store.store.domain}`;
+                    return (
+                      <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="bg-[#181818] border border-gray-800 rounded-lg p-4 flex items-center justify-center hover:bg-gray-800 transition-colors">
+                        <span className="text-white font-semibold">{store.store.name}</span>
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             )}

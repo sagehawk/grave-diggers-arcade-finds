@@ -39,7 +39,7 @@ const Index: React.FC = () => {
         getGames(),
       ]);
 
-      setFeaturedGames([...today, ...week, ...month, ...allTime]);
+      setFeaturedGames([...today, ...week, ...month, ...allTime].filter(game => game.esrb_rating?.name !== 'Adults Only'));
       setAllGames(all);
       setIsLoading(false);
     };
