@@ -9,14 +9,25 @@ const useGameFiltering = (filter: any, games: Game[]): Game[] => {
     let filtered = [...games].filter(game => !!game.background_image);
 
     filtered = filtered.filter(game => {
-      const adultKeywords = ['adult', 'hentai'];
+      const adultKeywords = [
+        'adult', 'hentai', 'sexy', 'nudity', 'erotic', 'porn', 'sex', 
+        '18+', 'mature', 'violence', 'gore'
+      ];
       const gameName = game.name.toLowerCase();
       const gameDescription = (game.description_raw || '').toLowerCase();
       const gameGenres = game.genres ? game.genres.map(g => g.name.toLowerCase()) : [];
+      const gameTags = game.tags ? game.tags.map(t => t.name.toLowerCase()) : [];
 
-      if (adultKeywords.some(keyword => gameName.includes(keyword))) return false;
-      if (adultKeywords.some(keyword => gameDescription.includes(keyword))) return false;
-      if (gameGenres.some(genre => adultKeywords.some(keyword => genre.includes(keyword)))) return false;
+      const isAdultGame = 
+        adultKeywords.some(keyword => gameName.includes(keyword)) ||
+        adultKeywords.some(keyword => gameDescription.includes(keyword)) ||
+        gameGenres.some(genre => adultKeywords.some(keyword => genre.includes(keyword))) ||
+        gameTags.some(tag => adultKeywords.some(keyword => tag.includes(keyword)));
+
+      if (isAdultGame) {
+        console.log(`Filtering adult game: ${game.name}`);
+        return false;
+      }
 
       return true;
     });

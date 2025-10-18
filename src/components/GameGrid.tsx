@@ -72,7 +72,7 @@ const GameGrid: React.FC<GameGridProps> = ({
     setIsLoading(false);
     setInitialLoading(true);
     setHasMoreGames(filteredGames.length > 0);
-  }, [filter.searchQuery, filter.genres, filter.platforms, filter.priceRange, filter.releaseStatus, filter.sortBy, filteredGames.length]);
+  }, [filter.searchQuery, filter.genres, filter.platforms, filter.sortBy]);
 
   // Load initial games when component mounts or when filteredGames changes
   useEffect(() => {
