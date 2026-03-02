@@ -54,21 +54,21 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
               {isMobile ? (
-                <img 
-                  src="https://i.imgur.com/DeL4OIK.png" 
-                  alt="GamerGrave Icon" 
-                  className="h-10 w-10" 
+                <img
+                  src="https://i.imgur.com/DeL4OIK.png"
+                  alt="GamerGrave Icon"
+                  className="h-10 w-10"
                 />
               ) : (
-                <img 
-                  src="https://i.imgur.com/ItKyOPt.jpeg" 
-                  alt="GamerGrave Logo" 
-                  className="h-12 sm:h-14" 
+                <img
+                  src="https://i.imgur.com/ItKyOPt.jpeg"
+                  alt="GamerGrave Logo"
+                  className="h-12 sm:h-14"
                 />
               )}
             </Link>
           </div>
-          
+
           {/* Navigation Links - Center */}
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
@@ -77,22 +77,22 @@ const Navbar: React.FC = () => {
             <Link to="/developers" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
               Developers
             </Link>
-            <Link to="/community" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
+            <Link to="/community-games" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
               Community
             </Link>
           </div>
-          
+
           {/* Right Side Actions */}
           <div className="flex items-center space-x-3">
             {/* Submit Game Button */}
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className="bg-ggrave-red text-white hover:bg-red-700 hidden sm:flex items-center transition-all hover:scale-105"
               onClick={handleSubmitClick}
             >
               <Upload size={16} className="mr-1.5" /> Submit Game
             </Button>
-            
+
             {/* Authentication Controls */}
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center space-x-2">
@@ -105,14 +105,14 @@ const Navbar: React.FC = () => {
                   <DropdownMenuContent className="bg-gray-900 border border-gray-800 text-white">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-gray-800" />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="hover:bg-gray-800 cursor-pointer"
                       onClick={() => navigate('/account/me')}
                     >
                       <User size={14} className="mr-2" /> Profile
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-gray-800" />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="hover:bg-gray-800 cursor-pointer text-red-400"
                       onClick={handleLogout}
                     >
@@ -123,9 +123,9 @@ const Navbar: React.FC = () => {
               </div>
             ) : (
               <div className="hidden sm:block">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red hover:border-ggrave-red focus:ring-2 focus:ring-ggrave-red focus:ring-opacity-50 transition-all"
                   onClick={() => {
                     setAuthModalView('login');
@@ -136,12 +136,12 @@ const Navbar: React.FC = () => {
                 </Button>
               </div>
             )}
-            
+
             {/* Mobile Authentication Button */}
             {!isAuthenticated && (
-              <Button 
-                variant="outline" 
-                size="icon" 
+              <Button
+                variant="outline"
+                size="icon"
                 className="sm:hidden bg-transparent border border-ggrave-red text-white hover:bg-ggrave-red transition-all"
                 onClick={() => {
                   setAuthModalView('login');
@@ -151,7 +151,7 @@ const Navbar: React.FC = () => {
                 <User size={18} />
               </Button>
             )}
-            
+
             {/* Mobile Dropdown for Authenticated Users */}
             {isAuthenticated && (
               <DropdownMenu>
@@ -163,20 +163,20 @@ const Navbar: React.FC = () => {
                 <DropdownMenuContent className="bg-gray-900 border border-gray-800 text-white">
                   <DropdownMenuLabel>{user?.username || 'My Account'}</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-800" />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="hover:bg-gray-800 cursor-pointer"
                     onClick={() => navigate('/account/me')}
                   >
                     <User size={14} className="mr-2" /> Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="hover:bg-gray-800 cursor-pointer"
                     onClick={() => navigate('/submit-game')}
                   >
                     <Upload size={14} className="mr-2" /> Submit Game
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-800" />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="hover:bg-gray-800 cursor-pointer text-red-400"
                     onClick={handleLogout}
                   >
@@ -185,12 +185,12 @@ const Navbar: React.FC = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            
+
             {/* Mobile "Submit" Button */}
             {!isAuthenticated && (
-              <Button 
-                variant="default" 
-                size="icon" 
+              <Button
+                variant="default"
+                size="icon"
                 className="sm:hidden bg-ggrave-red text-white hover:bg-red-700 transition-all hover:scale-105"
                 onClick={handleSubmitClick}
               >
@@ -202,9 +202,9 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Auth Modal */}
-      <AuthModal 
-        isOpen={authModalOpen} 
-        onClose={() => setAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
         defaultView={authModalView}
       />
     </nav>

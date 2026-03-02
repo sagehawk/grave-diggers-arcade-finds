@@ -87,6 +87,43 @@ You will need to have Node.js and npm installed on your machine. You will also n
 
 The application will be running on `http://localhost:5173`.
 
+## ☁️ AWS Deployment
+
+This project is AWS-ready with multiple deployment options:
+
+### Option 1: S3 + CloudFront (Static Hosting)
+
+1.  **Build the production bundle:**
+    ```sh
+    npm run build
+    ```
+2.  **Upload the `dist/` folder to an S3 bucket** configured for static website hosting.
+3.  **Create a CloudFront distribution** pointing to the S3 bucket.
+4.  **Set the error page** to `/index.html` with a `200` response code for SPA routing.
+
+### Option 2: Docker + ECS/Fargate
+
+1.  **Build the Docker image** (pass env vars as build args):
+    ```sh
+    docker build \
+      --build-arg VITE_SUPABASE_URL=your_url \
+      --build-arg VITE_SUPABASE_ANON_KEY=your_key \
+      --build-arg VITE_RAWG_API_KEY=your_api_key \
+      -t gamergrave .
+    ```
+2.  **Run locally:**
+    ```sh
+    docker run -p 80:80 gamergrave
+    ```
+3.  **Push to ECR** and deploy on ECS Fargate or App Runner.
+
+### Option 3: AWS CodeBuild + CodePipeline
+
+The included `buildspec.yml` configures an automated CI/CD pipeline:
+1.  Connect your GitHub repo to **AWS CodePipeline**.
+2.  Set environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_RAWG_API_KEY`) in CodeBuild.
+3.  Configure the build output to deploy to S3/CloudFront.
+
 ## ✍️ Author
 
 **Sajjad Haq**

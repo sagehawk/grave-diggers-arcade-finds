@@ -5,7 +5,7 @@ const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 const API_URL = 'https://api.rawg.io/api';
 
 if (!API_KEY) {
-  throw new Error('VITE_RAWG_API_KEY is not defined. Please add it to your .env file.');
+  console.warn('VITE_RAWG_API_KEY is not defined. RAWG features will not work. Add it to your .env.local file.');
 }
 
 const apiClient = axios.create({

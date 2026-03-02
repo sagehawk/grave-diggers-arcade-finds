@@ -7,6 +7,12 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export interface DownloadLink {
+  platform: string
+  url: string
+  label: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -35,6 +41,7 @@ export interface Database {
           status: 'published' | 'pending' | 'rejected' | 'deleted'
           storeLink?: string
           developerLink?: string
+          downloadLinks?: DownloadLink[]
         }
         Insert: {
           id?: string
@@ -60,6 +67,7 @@ export interface Database {
           status?: 'published' | 'pending' | 'rejected' | 'deleted'
           storeLink?: string
           developerLink?: string
+          downloadLinks?: DownloadLink[]
         }
         Update: {
           id?: string
@@ -85,6 +93,7 @@ export interface Database {
           status?: 'published' | 'pending' | 'rejected' | 'deleted'
           storeLink?: string
           developerLink?: string
+          downloadLinks?: DownloadLink[]
         }
       }
       users: {
