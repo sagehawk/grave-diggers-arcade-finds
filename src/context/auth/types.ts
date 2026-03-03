@@ -1,10 +1,10 @@
 
 import { User } from '../../types/auth';
-import { Session } from '@supabase/supabase-js';
+import { AuthSession } from 'aws-amplify/auth';
 
 export interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  session: AuthSession | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
