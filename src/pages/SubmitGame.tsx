@@ -11,7 +11,13 @@ import { useAuth } from '../hooks/useAuth';
 import { Genre, Platform } from '../types';
 import { validateFileSize, optimizeImage, optimizeMultipleImages } from '../utils/imageOptimization';
 import { Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { uploadData } from 'aws-amplify/storage';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../amplify/data/resource';
+// We no longer need supabase, but keep it commented out for now if you want
+// import { supabase } from '@/lib/supabase';
+
+const client = generateClient<Schema>();
 import LoadingIndicator from '../components/LoadingIndicator';
 import BasicInfoFields from '../components/GameSubmission/BasicInfoFields';
 import MediaUploadFields from '../components/GameSubmission/MediaUploadFields';
@@ -157,41 +163,23 @@ const SubmitGame: React.FC = () => {
         description: "Optimizing images for upload. Please wait...",
       });
 
-      // Create a public bucket for games without checking if it exists first
-      try {
-        // Try to create the bucket (will error if exists, but we'll catch that)
-        const { error: createError } = await supabase.storage.createBucket('games', {
-          public: true,
-          fileSizeLimit: 10485760, // 10MB
-        });
-
-        if (createError && !createError.message.includes('already exists')) {
-          console.error("Error creating games bucket:", createError);
-        }
-      } catch (bucketError) {
-        // Bucket likely already exists, we can continue
-        console.log("Bucket may already exist:", bucketError);
-      }
-
       // Process thumbnail
       let thumbnailUrl = '';
       if (data.thumbnail && data.thumbnail.length > 0) {
         const optimizedThumbnail = await optimizeImage(data.thumbnail[0], true);
         const thumbnailPath = `game-thumbnails/${user.id}/${Date.now()}-${optimizedThumbnail.name}`;
 
-        // Upload to Supabase Storage
-        const { data: thumbnailData, error: thumbnailError } = await supabase.storage
-          .from('games')
-          .upload(thumbnailPath, optimizedThumbnail);
+        // Upload to AWS S3 via Amplify Storage
+        await uploadData({
+          path: thumbnailPath,
+          data: optimizedThumbnail,
+          options: {
+            contentType: optimizedThumbnail.type,
+          }
+        }).result;
 
-        if (thumbnailError) throw new Error(`Thumbnail upload failed: ${thumbnailError.message}`);
-
-        // Get public URL
-        const { data: publicUrlData } = supabase.storage
-          .from('games')
-          .getPublicUrl(thumbnailPath);
-
-        thumbnailUrl = publicUrlData.publicUrl;
+        // Save just the S3 path, we will resolve it on the client side
+        thumbnailUrl = thumbnailPath;
       }
 
       // Process gallery images
@@ -203,54 +191,42 @@ const SubmitGame: React.FC = () => {
         const uploadPromises = optimizedGalleryImages.map(async (file, index) => {
           const galleryPath = `game-galleries/${user.id}/${Date.now()}-${index}-${file.name}`;
 
-          const { data: galleryData, error: galleryError } = await supabase.storage
-            .from('games')
-            .upload(galleryPath, file);
+          await uploadData({
+            path: galleryPath,
+            data: file,
+            options: {
+              contentType: file.type,
+            }
+          }).result;
 
-          if (galleryError) throw new Error(`Gallery image upload failed: ${galleryError.message}`);
-
-          const { data: publicUrlData } = supabase.storage
-            .from('games')
-            .getPublicUrl(galleryPath);
-
-          return publicUrlData.publicUrl;
+          return galleryPath;
         });
 
         galleryUrls = await Promise.all(uploadPromises);
       }
 
-      // Prepare game data for database
-      const gameData = {
+      // Convert genre and platforms to comma separated strings since our schema defines them as strings
+      const genresStr = data.genres.join(', ');
+
+      // Save data using AWS AppSync Gen 2 Data Client
+      const { data: newGame, errors: createErrors } = await client.models.Game.create({
         title: data.title,
-        tagline: data.tagline || null,
+        summary: data.tagline || '',
         description: data.description,
-        thumbnail: thumbnailUrl,
-        genre: data.genres,
-        platforms: data.platforms,
+        genre: genresStr,
+        release_date: new Date().toISOString(),
         price: data.price,
-        releaseStatus: data.status,
-        views: 0,
-        likes: 0,
-        comments: 0,
-        releaseDate: new Date().toISOString(),
-        mediaGallery: galleryUrls.length > 0 ? galleryUrls : null,
-        videoUrl: data.trailerUrl || null,
-        submitter_user_id: user.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        status: 'pending',
-        storeLink: data.storeLink || null,
-        developerLink: data.developerLink || null,
-        downloadLinks: data.downloadLinks.length > 0 ? data.downloadLinks.filter(l => l.url.trim()) : null
-      };
+        status: data.status,
+        thumbnail_url: thumbnailUrl,
+        video_url: data.trailerUrl || '',
+        gallery_urls: galleryUrls.length > 0 ? galleryUrls : null,
+        downloadLinks: data.downloadLinks.length > 0 ? JSON.stringify(data.downloadLinks.filter(l => l.url.trim())) : null,
+        submitter_id: user.id,
+      });
 
-      // Insert game data into Supabase
-      const { data: insertedGame, error: insertError } = await supabase
-        .from('games')
-        .insert(gameData)
-        .select();
-
-      if (insertError) throw new Error(`Failed to save game data: ${insertError.message}`);
+      if (createErrors) {
+        throw new Error(`Failed to save game data via AWS AppSync: ${createErrors[0].message}`);
+      }
 
       // Show success toast
       toast({
