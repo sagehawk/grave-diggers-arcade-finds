@@ -3,5 +3,10 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// We're now using hardcoded environment variables so there's no need for the check
+import { Amplify } from 'aws-amplify';
+import outputs from '../amplify_outputs.json';
+
+Amplify.configure(outputs);
+
+// We're now using AWS Amplify instead of Supabase
 createRoot(document.getElementById("root")!).render(<App />);

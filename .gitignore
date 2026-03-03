@@ -26,3 +26,8 @@ dist-ssr
 errors.txt
 rawg_documentation
 rawg_instructions
+
+# amplify
+.amplify
+amplify_outputs*
+amplifyconfiguration*

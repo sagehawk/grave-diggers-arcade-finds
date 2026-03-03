@@ -15,32 +15,24 @@ interface AuthModalProps {
   defaultView?: 'login' | 'register' | 'forgotPassword';
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ 
-  isOpen, 
+const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
   onClose,
-  defaultView = 'login' 
+  defaultView = 'login'
 }) => {
   const [view, setView] = useState<'login' | 'register' | 'forgotPassword'>(defaultView);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  
+
   const handleGoogleLogin = async () => {
     setAuthError(null);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-        }
-      });
-      
-      if (error) throw error;
-      
-      // No need for toast here as the page will redirect to Google
+      const { signInWithRedirect } = await import('aws-amplify/auth');
+      await signInWithRedirect({ provider: 'Google' });
     } catch (error) {
       console.error('Google login failed:', error);
-      
+
       setAuthError(error instanceof Error ? error.message : "An error occurred during Google login");
     }
   };
@@ -57,8 +49,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const handleSuccess = () => {
     toast({
       title: "Success!",
-      description: view === 'login' ? 
-        "You've been logged in." : 
+      description: view === 'login' ?
+        "You've been logged in." :
         "Your account has been created. Please check your email for confirmation instructions.",
     });
     onClose();
@@ -72,9 +64,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
             {view === 'login' ? 'Log In' : view === 'register' ? 'Sign Up' : 'Reset Password'}
           </DialogTitle>
           <DialogDescription className="text-gray-400">
-            {view === 'login' ? 'Enter your credentials to access your account.' : 
-             view === 'register' ? 'Create a new account to join the community.' : 
-             'Enter your email to receive a password reset link.'}
+            {view === 'login' ? 'Enter your credentials to access your account.' :
+              view === 'register' ? 'Create a new account to join the community.' :
+                'Enter your email to receive a password reset link.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -88,7 +80,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Form Views */}
         {view === 'login' && (
-          <LoginForm 
+          <LoginForm
             onSuccess={handleSuccess}
             setAuthError={setAuthError}
             onSwitchView={setView}
@@ -99,7 +91,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
         )}
 
         {view === 'register' && (
-          <RegisterForm 
+          <RegisterForm
             onSuccess={handleSuccess}
             setAuthError={setAuthError}
             onSwitchView={setView}
@@ -110,7 +102,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
         )}
 
         {view === 'forgotPassword' && (
-          <ForgotPasswordForm 
+          <ForgotPasswordForm
             onSwitchView={setView}
             setAuthError={setAuthError}
             isSubmitting={isSubmitting}
