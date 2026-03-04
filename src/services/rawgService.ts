@@ -4,8 +4,8 @@ import axios from 'axios';
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 const API_URL = 'https://api.rawg.io/api';
 
-if (!API_KEY) {
-  console.warn('VITE_RAWG_API_KEY is not defined. RAWG features will not work. Add it to your .env.local file.');
+if (!API_KEY || API_KEY === 'placeholder') {
+  console.warn('VITE_RAWG_API_KEY is not defined or is a placeholder. RAWG features will not work. Add it to your .env.local file or Amplify environment variables.');
 }
 
 const apiClient = axios.create({
@@ -15,9 +15,22 @@ const apiClient = axios.create({
   },
 });
 
+// ESRB rating IDs to EXCLUDE (mature/adult only content):
+// 4 = Mature (17+), 5 = Adults Only (18+)
+// We INCLUDE: 1 = Everyone, 2 = Everyone 10+, 3 = Teen
+const SAFE_ESRB_RATINGS = '1,2,3'; // Everyone, Everyone 10+, Teen
+
 export const getGames = async () => {
   try {
-    const response = await apiClient.get('/games', { params: { genres: '51', page_size: 100, ordering: '-released' } });
+    const response = await apiClient.get('/games', {
+      params: {
+        genres: '51', // Indie
+        page_size: 40,
+        ordering: '-metacritic', // Best rated first
+        metacritic: '70,100', // Only games rated 70+ on Metacritic
+        esrb_rating: SAFE_ESRB_RATINGS,
+      }
+    });
     return response.data.results;
   } catch (error) {
     console.error('Error fetching games:', error);
@@ -68,9 +81,10 @@ export const getGamesByTimeframe = async (timeframe: 'today' | 'week' | 'month' 
 
   try {
     const params: any = {
-      ordering: '-released',
+      ordering: '-rating', // Best user-rated first
       page_size: 3,
-      genres: '51',
+      genres: '51', // Indie
+      esrb_rating: SAFE_ESRB_RATINGS,
     };
 
     if (dates) {
