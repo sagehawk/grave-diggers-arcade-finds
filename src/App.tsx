@@ -13,6 +13,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import CommunityGames from './pages/CommunityGames';
 import CommunityGameDetail from './pages/CommunityGameDetail';
+import AdminReview from './pages/AdminReview';
 import { AuthProvider } from './context/auth/AuthProvider';
 import './App.css';
 import { Toaster } from './components/ui/toaster';
@@ -35,6 +36,7 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/admin" element={<AdminReview />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
