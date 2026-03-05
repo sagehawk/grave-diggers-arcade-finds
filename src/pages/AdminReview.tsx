@@ -7,7 +7,7 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from '../../amplify/data/resource';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, ExternalLink, Loader2, Shield, Inbox, Eye } from 'lucide-react';
@@ -103,7 +103,7 @@ const AdminReview: React.FC = () => {
             await client.models.Game.update({
                 id: gameId,
                 status: 'approved'
-            });
+            } as any);
             setGames(prev => prev.map(g => g.id === gameId ? { ...g, status: 'approved' } : g));
             toast({ title: 'Game Approved', description: 'The game is now live on the site.' });
         } catch (err) {
@@ -117,7 +117,7 @@ const AdminReview: React.FC = () => {
             await client.models.Game.update({
                 id: gameId,
                 status: 'rejected'
-            });
+            } as any);
             setGames(prev => prev.map(g => g.id === gameId ? { ...g, status: 'rejected' } : g));
             toast({ title: 'Game Rejected', description: 'The game has been rejected.' });
         } catch (err) {
